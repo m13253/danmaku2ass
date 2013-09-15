@@ -8,8 +8,8 @@ import sys
 import xml.dom.minidom
 
 
-def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, lifetime, reduced):
-    WriteASSHead(f, width, height, fontface, fontsize)
+def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
+    WriteASSHead(f, width, height, fontface, fontsize, alpha)
     rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
     for i in comments:
         row = 0
@@ -104,7 +104,7 @@ def ConvertTimestamp(timestamp):
     return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), centsecond)
 
 
-def WriteASSHead(f, width, height, fontface, fontsize):
+def WriteASSHead(f, width, height, fontface, fontsize, alpha):
     f.write(
 '''[Script Info]
 ScriptType: v4.00+
@@ -114,11 +114,11 @@ PlayResY: %(height)s
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default, %(fontface)s, %(fontsize)s, &H00FFFFFF, &H00FFFFFF, &H00000000, &H00000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 2, 20, 20, 20, 0
+Style: Default, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 2, 20, 20, 20, 0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': fontsize}
+''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': fontsize, 'alpha': 255-round(alpha*255)}
     )
 
 
@@ -141,6 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--size', metavar='WIDTHxHEIGHT', required=True, help='Stage size in pixels')
     parser.add_argument('-fn', '--font', metavar='FONT', help='Specify font face', default='黑体')
     parser.add_argument('-fs', '--fontsize', metavar='SIZE', help='Default font size', type=float, default=25.0)
+    parser.add_argument('-a', '--alpha', metavar='ALPHA', help='Text opaque', type=float, default=1.0)
     parser.add_argument('-l', '--lifetime', metavar='SECONDS', help='Duration of comment display', type=float, default=5.0)
     parser.add_argument('-p', '--protect', metavar='HEIGHT', help='Reserve blank on the bottom of the stage', type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help='Reduce the amount of danmakus if stage is full')
@@ -162,6 +163,6 @@ if __name__ == '__main__':
     else:
         fo = sys.stdout
     comments.sort()
-    ProcessComments(comments, fo, width, height, args.protect, args.font, args.fontsize, args.lifetime, args.reduce)
+    ProcessComments(comments, fo, width, height, args.protect, args.font, args.fontsize, args.alpha, args.lifetime, args.reduce)
     if args.output:
         fo.close()
