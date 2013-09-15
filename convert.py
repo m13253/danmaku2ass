@@ -73,8 +73,6 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
         styles += '{\\c&H%02X%02X%02x&}' % (c[5]&0xff, (c[5]>>8)&0xff, (c[5]>>16)&0xff)
         if c[5] == 0x000000:
             styles += '{\\3c&HFFFFFF&}'
-        else:
-            styles += '{\\bord0}'
     f.write('Dialogue: 3,%(start)s,%(end)s,Default,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text})
 
 
