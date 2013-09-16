@@ -98,7 +98,7 @@ def ReadCommentsBilibili(f, fontsize):
 def ConvertTimestamp(timestamp):
     hour, minute = divmod(timestamp, 3600)
     minute, second = divmod(minute, 60)
-    centsecond = int(second*100.0)
+    centsecond = round(second*100.0)
     return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), centsecond)
 
 
