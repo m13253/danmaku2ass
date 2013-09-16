@@ -126,7 +126,7 @@ def NeedWhiteBorder(rgb):
 
 
 def CalculateLength(s):
-    return max(map(len, s.split('\\n')))
+    return max(map(len, s.split('\n')))
 
 
 def ConvertType2(row, height, bottomReserved):
