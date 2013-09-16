@@ -62,9 +62,9 @@ def MarkCommentRow(rows, c, row):
 def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
     text = c[3].replace('\\', '\\\\').replace('\n', '\\N')
     if c[4] == 1:
-        styles = '{\\a2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
+        styles = '{\\a6}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
     elif c[4] == 2:
-        styles = '{\\a6}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)}
+        styles = '{\\a2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)}
     else:
         styles = '{\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)}' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])}
     if -1 < c[6]-fontsize < 1:
@@ -112,7 +112,7 @@ PlayResY: %(height)s
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 1, 20, 20, 20, 0
+Style: Default, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 5, 20, 20, 20, 0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
