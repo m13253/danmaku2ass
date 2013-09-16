@@ -60,7 +60,7 @@ def MarkCommentRow(rows, c, row):
 
 
 def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
-    text = c[3].replace('\\', '\\\\').replace('\n', '\\n')
+    text = c[3].replace('\\', '\\\\').replace('\n', '\\N')
     if c[4] == 1:
         styles = '{\\a2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
     elif c[4] == 2:
