@@ -67,7 +67,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
         styles = '{\\an2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)}
     else:
         styles = '{\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)}' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])}
-    if -1 < c[6]-fontsize < 1:
+    if not (-1 < c[6]-fontsize < 1):
         styles += '{\\fs%s}' % round(c[6])
     if c[5] != 0xffffff:
         styles += '{\\c&H%02X%02X%02x&}' % (c[5]&0xff, (c[5]>>8)&0xff, (c[5]>>16)&0xff)
@@ -116,7 +116,7 @@ Style: Default, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFF
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': fontsize, 'alpha': 255-round(alpha*255)}
+''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': round(fontsize), 'alpha': 255-round(alpha*255)}
     )
 
 
