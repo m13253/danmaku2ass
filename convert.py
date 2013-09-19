@@ -37,7 +37,7 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
             if rows[c[4]][row] and rows[c[4]][row][0]+lifetime > c[0]:
                 break
         else:
-            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime*c[8]/width > c[0]:
+            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime*(rows[c[4]][row][8]+c[8])/width > c[0]:
                 break
         row += 1
         res += 1
