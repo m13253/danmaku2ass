@@ -104,7 +104,8 @@ def ConvertTimestamp(timestamp):
 
 def WriteASSHead(f, width, height, fontface, fontsize, alpha):
     f.write(
-'''[Script Info]
+'''\ufeff
+[Script Info]
 ScriptType: v4.00+
 Collisions: Normal
 PlayResX: %(width)s
