@@ -55,8 +55,11 @@ def FindAlternativeRow(rows, c, height, bottomReserved):
 
 
 def MarkCommentRow(rows, c, row):
-    for i in range(row, row+math.ceil(c[7])):
-        rows[c[4]][i] = c
+    try:
+        for i in range(row, row+math.ceil(c[7])):
+            rows[c[4]][i] = c
+    except IndexError:
+        pass
 
 
 def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
