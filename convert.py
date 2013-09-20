@@ -124,7 +124,7 @@ def ReadCommentsNiconico(f, fontsize):
                     size = fontsize*0.64
                 elif mailstyle in NiconicoColorMap:
                     color = NiconicoColorMap[mailstyle]
-            yield (int(comment.getAttribute('vpos'))*0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            yield (max(int(comment.getAttribute('vpos')), 0)*0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning('Invalid comment: %s' % comment.toxml())
