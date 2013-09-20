@@ -79,6 +79,58 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
     f.write('Dialogue: 3,%(start)s,%(end)s,Default,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text})
 
 
+def ProbeCommentFormat(f):
+    f.seek(0)
+    tmp = f.read(1)
+    if tmp == '{':
+        f.seek(0)
+        return 'Acfun'
+    elif tmp == '<':
+        tmp = f.read(39)
+        f.seek(0)
+        if tmp == '?xml version="1.0" encoding="UTF-8"?><p':
+            return 'Niconico'
+        elif tmp == '?xml version="1.0" encoding="UTF-8"?><i':
+            return 'Bilibili'
+        else:
+            return None
+    else:
+        f.seek(0)
+        return None
+
+
+NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
+
+
+def ReadCommentsNiconico(f, fontsize):
+    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
+    dom = xml.dom.minidom.parse(f)
+    comment_element = dom.getElementsByTagName('chat')
+    i = 0
+    for comment in comment_element:
+        try:
+            c = str(comment.childNodes[0].wholeText)
+            pos = 0
+            color = 0xffffff
+            size = fontsize
+            for mailstyle in str(comment.getAttribute('mail')).split():
+                if mailstyle == 'ue':
+                    pos = 1
+                elif mailstyle == 'shita':
+                    pos = 2
+                elif mailstyle == 'big':
+                    size = fontsize*1.44
+                elif mailstyle == 'small':
+                    size = fontsize*0.64
+                elif mailstyle in NiconicoColorMap:
+                    color = NiconicoColorMap[mailstyle]
+            yield (int(comment.getAttribute('vpos'))*0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            i += 1
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning('Invalid comment: %s' % comment.toxml())
+            continue
+
+
 def ReadCommentsBilibili(f, fontsize):
     'Output format: [(timeline, timestamp, no, comment, type, color, size, height, width)]'
     dom = xml.dom.minidom.parse(f)
@@ -91,7 +143,7 @@ def ReadCommentsBilibili(f, fontsize):
             assert p[1] in ('1', '4', '5')
             c = str(comment.childNodes[0].wholeText).replace('/n', '\\n')
             size = int(p[2])*fontsize/25.0
-            yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1}[p[1]], int(p[3]), size, (c.count('\\n')+1)*size, CalculateLength(c)*size)
+            yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning('Invalid comment: %s' % comment.toxml())
@@ -158,7 +210,10 @@ if __name__ == '__main__':
     comments = []
     for i in args.file:
         with open(i, 'r', encoding='utf-8') as f:
-            for comment in ReadCommentsBilibili(f, args.fontsize):
+            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Bilibili': ReadCommentsBilibili}[ProbeCommentFormat(f)]
+            if not CommentProcesser:
+                raise ValueError('Unknown comment file format: %s' % i)
+            for comment in CommentProcesser(f, args.fontsize):
                 comments.append(comment)
     if args.output:
         fo = open(args.output, 'w', encoding='utf-8', newline='\r\n')
