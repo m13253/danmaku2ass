@@ -18,7 +18,9 @@ Then, execute `danmaku2ass`. You can see further instructions below.
 Example usage
 -------------
 
-`./danmaku2ass -o foo.ass -s 1920x1080 -fn "MS PGothic" -fs 48 -a 0.8 -l 5 foo.xml`
+```sh
+./danmaku2ass -o foo.ass -s 1920x1080 -fn "MS PGothic" -fs 48 -a 0.8 -l 5 foo.xml
+```
 
 Name the output file with same basename but different extension (.ass) as the video. Put them into the same directory and most media players will automatically load them.
 
@@ -67,7 +69,9 @@ Most ASS renderers render ASS subtitles at the same resolution as the video. Thi
 
 Use `ffmpeg`:
 
-`ffmpeg -i foo.flv -vf ass=foo.ass -vcodec libx264 -acodec copy foo-with-danmaku.flv`
+```sh
+ffmpeg -i foo.flv -vf ass=foo.ass -vcodec libx264 -acodec copy foo-with-danmaku.flv
+```
 
 Change the parameters as you like.
 
