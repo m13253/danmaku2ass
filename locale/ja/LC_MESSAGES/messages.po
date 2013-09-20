@@ -1,7 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
-"POT-Creation-Date: 2013-09-20 17:42+0800\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-09-20 18:20+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
@@ -27,12 +28,16 @@ msgid "Stage size in pixels"
 msgstr "ピクセル単位でステージのサイズ"
 
 #: danmaku2ass.py:217
+msgid "(FONT) sans-serif"
+msgstr "(FONT) MS PGothic"
+
+#: danmaku2ass.py:217
 msgid "Specify font face"
 msgstr "フォントを指定する"
 
-#: danmaku2ass.py:217
-msgid "(FONT) sans-serif"
-msgstr "(FONT) MS PGothic"
+#: danmaku2ass.py:218
+msgid "Default font size"
+msgstr "デフォルトのフォントサイズ"
 
 #: danmaku2ass.py:219
 msgid "Text opaque"

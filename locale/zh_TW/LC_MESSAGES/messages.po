@@ -1,7 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
-"POT-Creation-Date: 2013-09-20 17:42+0800\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-09-20 18:20+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -27,12 +28,16 @@ msgid "Stage size in pixels"
 msgstr "舞臺尺寸的畫素數目"
 
 #: danmaku2ass.py:217
+msgid "(FONT) sans-serif"
+msgstr "(FONT) Microsoft JhengHei"
+
+#: danmaku2ass.py:217
 msgid "Specify font face"
 msgstr "指定字型名稱"
 
-#: danmaku2ass.py:217
-msgid "(FONT) sans-serif"
-msgstr "(FONT) Microsoft JhengHei"
+#: danmaku2ass.py:218
+msgid "Default font size"
+msgstr "默認字型大小"
 
 #: danmaku2ass.py:219
 msgid "Text opaque"

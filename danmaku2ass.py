@@ -215,7 +215,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', metavar='OUTPUT', help=_('Output file'))
     parser.add_argument('-s', '--size', metavar='WIDTHxHEIGHT', required=True, help=_('Stage size in pixels'))
     parser.add_argument('-fn', '--font', metavar='FONT', help=_('Specify font face'), default=_('(FONT) sans-serif')[7:])
-    parser.add_argument('-fs', '--fontsize', metavar='SIZE', help=('Default font size'), type=float, default=25.0)
+    parser.add_argument('-fs', '--fontsize', metavar='SIZE', help=(_('Default font size')), type=float, default=25.0)
     parser.add_argument('-a', '--alpha', metavar='ALPHA', help=_('Text opaque'), type=float, default=1.0)
     parser.add_argument('-l', '--lifetime', metavar='SECONDS', help=_('Duration of comment display'), type=float, default=5.0)
     parser.add_argument('-p', '--protect', metavar='HEIGHT', help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
