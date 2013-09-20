@@ -48,7 +48,7 @@ msgstr "ステージの下にブランクを予備する"
 
 #: danmaku2ass.py:222
 msgid "Reduce the amount of comments if stage is full"
-msgstr "ステージがいっぱいになった場合のコメントの量を減らします"
+msgstr "ステージがいっぱいになったのときにコメントの量を減らす"
 
 #: danmaku2ass.py:223
 msgid "Comment file to be processed"
