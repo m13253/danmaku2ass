@@ -2,6 +2,7 @@
 
 import argparse
 import colorsys
+import json
 import logging
 import math
 import sys
@@ -82,7 +83,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
 def ProbeCommentFormat(f):
     f.seek(0)
     tmp = f.read(1)
-    if tmp == '{':
+    if tmp == '[':
         f.seek(0)
         return 'Acfun'
     elif tmp == '<':
@@ -106,7 +107,6 @@ def ReadCommentsNiconico(f, fontsize):
     'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('chat')
-    i = 0
     for comment in comment_element:
         try:
             c = str(comment.childNodes[0].wholeText)
@@ -125,14 +125,31 @@ def ReadCommentsNiconico(f, fontsize):
                 elif mailstyle in NiconicoColorMap:
                     color = NiconicoColorMap[mailstyle]
             yield (max(int(comment.getAttribute('vpos')), 0)*0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n')+1)*size, CalculateLength(c)*size)
-            i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning('Invalid comment: %s' % comment.toxml())
             continue
 
 
+def ReadCommentsAcfun(f, fontsize):
+    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
+    comment_element = json.load(f)
+    i = 0
+    for comment in comment_element:
+        try:
+            p = str(comment['c']).split(',')
+            assert len(p) >= 6
+            assert p[2] in ('1', '2', '4', '5')
+            c = str(comment['m'])
+            size = int(p[3])*fontsize/25.0
+            yield (float(p[0]), int(p[5]), i, c, {'1': 0, '2': 0, '4': 2, '5': 1}[p[2]], int(p[1]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            i += 1
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning('Invalid comment: %r' % comment)
+            continue
+
+
 def ReadCommentsBilibili(f, fontsize):
-    'Output format: [(timeline, timestamp, no, comment, type, color, size, height, width)]'
+    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('d')
     i = 0
@@ -210,7 +227,7 @@ if __name__ == '__main__':
     comments = []
     for i in args.file:
         with open(i, 'r', encoding='utf-8') as f:
-            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Bilibili': ReadCommentsBilibili}[ProbeCommentFormat(f)]
+            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili}[ProbeCommentFormat(f)]
             if not CommentProcesser:
                 raise ValueError('Unknown comment file format: %s' % i)
             for comment in CommentProcesser(f, args.fontsize):
