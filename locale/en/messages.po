@@ -1,0 +1,65 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Danmaku2ASS\n"
+"POT-Creation-Date: 2013-09-20 17:42+0800\n"
+"Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: danmaku2ass.py:133 danmaku2ass.py:170
+#, python-format
+msgid "Invalid comment: %s"
+msgstr "Invalid comment: %s"
+
+#: danmaku2ass.py:151
+#, python-format
+msgid "Invalid comment: %r"
+msgstr "Invalid comment: %r"
+
+#: danmaku2ass.py:215
+msgid "Output file"
+msgstr "Output file"
+
+#: danmaku2ass.py:216
+msgid "Stage size in pixels"
+msgstr "Stage size in pixels"
+
+#: danmaku2ass.py:217
+msgid "Specify font face"
+msgstr "Specify font face"
+
+#: danmaku2ass.py:217
+msgid "(FONT) sans-serif"
+msgstr "(FONT) Helvetica"
+
+#: danmaku2ass.py:219
+msgid "Text opaque"
+msgstr "Text opaque"
+
+#: danmaku2ass.py:220
+msgid "Duration of comment display"
+msgstr "Duration of comment display"
+
+#: danmaku2ass.py:221
+msgid "Reserve blank on the bottom of the stage"
+msgstr "Reserve blank on the bottom of the stage"
+
+#: danmaku2ass.py:222
+msgid "Reduce the amount of comments if stage is full"
+msgstr "Reduce the amount of comments if stage is full"
+
+#: danmaku2ass.py:223
+msgid "Comment file to be processed"
+msgstr "Comment file to be processed"
+
+#: danmaku2ass.py:230
+#, python-format
+msgid "Invalid stage size: %r"
+msgstr "Invalid stage size: %r"
+
+#: danmaku2ass.py:236
+#, python-format
+msgid "Unknown comment file format: %s"
+msgstr "Unknown comment file format: %s"
