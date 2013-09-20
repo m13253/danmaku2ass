@@ -2,11 +2,15 @@
 
 import argparse
 import colorsys
+import gettext
 import json
 import logging
 import math
 import sys
 import xml.dom.minidom
+
+
+gettext.install('messages', 'locale')
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
@@ -126,7 +130,7 @@ def ReadCommentsNiconico(f, fontsize):
                     color = NiconicoColorMap[mailstyle]
             yield (max(int(comment.getAttribute('vpos')), 0)*0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n')+1)*size, CalculateLength(c)*size)
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
-            logging.warning('Invalid comment: %s' % comment.toxml())
+            logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
 
 
@@ -144,7 +148,7 @@ def ReadCommentsAcfun(f, fontsize):
             yield (float(p[0]), int(p[5]), i, c, {'1': 0, '2': 0, '4': 2, '5': 1}[p[2]], int(p[1]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
-            logging.warning('Invalid comment: %r' % comment)
+            logging.warning(_('Invalid comment: %r') % comment)
             continue
 
 
@@ -163,7 +167,7 @@ def ReadCommentsBilibili(f, fontsize):
             yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
-            logging.warning('Invalid comment: %s' % comment.toxml())
+            logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
 
 
@@ -208,28 +212,28 @@ def ConvertType2(row, height, bottomReserved):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output', metavar='OUTPUT', help='Output file')
-    parser.add_argument('-s', '--size', metavar='WIDTHxHEIGHT', required=True, help='Stage size in pixels')
-    parser.add_argument('-fn', '--font', metavar='FONT', help='Specify font face', default='黑体')
-    parser.add_argument('-fs', '--fontsize', metavar='SIZE', help='Default font size', type=float, default=25.0)
-    parser.add_argument('-a', '--alpha', metavar='ALPHA', help='Text opaque', type=float, default=1.0)
-    parser.add_argument('-l', '--lifetime', metavar='SECONDS', help='Duration of comment display', type=float, default=5.0)
-    parser.add_argument('-p', '--protect', metavar='HEIGHT', help='Reserve blank on the bottom of the stage', type=int, default=0)
-    parser.add_argument('-r', '--reduce', action='store_true', help='Reduce the amount of danmakus if stage is full')
-    parser.add_argument('file', metavar='FILE', nargs='+', help='Comment file to be processed')
+    parser.add_argument('-o', '--output', metavar='OUTPUT', help=_('Output file'))
+    parser.add_argument('-s', '--size', metavar='WIDTHxHEIGHT', required=True, help=_('Stage size in pixels'))
+    parser.add_argument('-fn', '--font', metavar='FONT', help=_('Specify font face'), default=_('(FONT) sans-serif')[7:])
+    parser.add_argument('-fs', '--fontsize', metavar='SIZE', help=('Default font size'), type=float, default=25.0)
+    parser.add_argument('-a', '--alpha', metavar='ALPHA', help=_('Text opaque'), type=float, default=1.0)
+    parser.add_argument('-l', '--lifetime', metavar='SECONDS', help=_('Duration of comment display'), type=float, default=5.0)
+    parser.add_argument('-p', '--protect', metavar='HEIGHT', help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
+    parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
+    parser.add_argument('file', metavar='FILE', nargs='+', help=_('Comment file to be processed'))
     args = parser.parse_args()
     try:
         width, height = str(args.size).split('x', 1)
         width = int(width)
         height = int(height)
     except ValueError:
-        raise ValueError('Invalid stage size: %r' % args.size)
+        raise ValueError(_('Invalid stage size: %r') % args.size)
     comments = []
     for i in args.file:
         with open(i, 'r', encoding='utf-8') as f:
             CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili}[ProbeCommentFormat(f)]
             if not CommentProcesser:
-                raise ValueError('Unknown comment file format: %s' % i)
+                raise ValueError(_('Unknown comment file format: %s') % i)
             for comment in CommentProcesser(f, args.fontsize):
                 comments.append(comment)
     if args.output:
