@@ -61,7 +61,7 @@ optional arguments:
 FAQ
 ---
 
-### The text is moving laggy. / The text is a slightly blurred.
+### The text is moving laggy. / The text is slightly blurred.
 
 Most ASS renderers render ASS subtitles at the same resolution as the video. This is probably because the video is at low resolution or framerate.
 
@@ -83,8 +83,8 @@ This is probably because of comment styles that are not recognized by Danmaku2AS
 
 Currently no. But there will soon be one made of Gtk+ 3. If you would like to help me, please contact with me.
 
-Contribute
-----------
+Contributing
+------------
 
 Any contribution is welcome. Any donation is welcome as well.
 
