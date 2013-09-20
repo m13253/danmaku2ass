@@ -44,7 +44,7 @@ msgstr "コメント表示の時間"
 
 #: danmaku2ass.py:221
 msgid "Reserve blank on the bottom of the stage"
-msgstr "ステージの下部に予備のブランク"
+msgstr "ステージの下にブランクを予備する"
 
 #: danmaku2ass.py:222
 msgid "Reduce the amount of comments if stage is full"
