@@ -54,7 +54,7 @@ def FindAlternativeRow(rows, c, height, bottomReserved):
     for row in range(height-bottomReserved-math.ceil(c[7])):
         if not rows[c[4]][row]:
             return row
-        elif rows[c[4]][row][1] < rows[c[4]][res][1]:
+        elif rows[c[4]][row][0] < rows[c[4]][res][0]:
             res = row
     return res
 
