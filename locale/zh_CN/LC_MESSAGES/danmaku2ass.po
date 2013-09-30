@@ -1,10 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-20 18:20+0800\n"
+"POT-Creation-Date: 2013-09-30 23:13+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
-"Language: en\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -12,59 +11,91 @@ msgstr ""
 #: danmaku2ass.py:133 danmaku2ass.py:170
 #, python-format
 msgid "Invalid comment: %s"
-msgstr "Invalid comment: %s"
+msgstr "无效弹幕：%s"
 
 #: danmaku2ass.py:151
 #, python-format
 msgid "Invalid comment: %r"
-msgstr "Invalid comment: %r"
+msgstr "无效弹幕：%r"
+
+#: danmaku2ass.py:215
+msgid "OUTPUT"
+msgstr "输出"
 
 #: danmaku2ass.py:215
 msgid "Output file"
-msgstr "Output file"
+msgstr "输出文件"
 
 #: danmaku2ass.py:216
 msgid "Stage size in pixels"
-msgstr "Stage size in pixels"
+msgstr "舞台尺寸的像素数目"
+
+#: danmaku2ass.py:216
+msgid "WIDTHxHEIGHT"
+msgstr "宽x高"
 
 #: danmaku2ass.py:217
 msgid "(FONT) sans-serif"
-msgstr "(FONT) Helvetica"
+msgstr "(FONT) 黑体"
+
+#: danmaku2ass.py:217
+msgid "FONT"
+msgstr "字体"
 
 #: danmaku2ass.py:217
 msgid "Specify font face"
-msgstr "Specify font face"
+msgstr "指定字体名称"
 
 #: danmaku2ass.py:218
 msgid "Default font size"
-msgstr "Default font size"
+msgstr "默认字号"
+
+#: danmaku2ass.py:218
+msgid "SIZE"
+msgstr "尺寸"
+
+#: danmaku2ass.py:219
+msgid "ALPHA"
+msgstr "ALPHA"
 
 #: danmaku2ass.py:219
 msgid "Text opaque"
-msgstr "Text opaque"
+msgstr "文字不透明度"
 
 #: danmaku2ass.py:220
 msgid "Duration of comment display"
-msgstr "Duration of comment display"
+msgstr "弹幕显示时长"
+
+#: danmaku2ass.py:220
+msgid "SECONDS"
+msgstr "秒数"
+
+#: danmaku2ass.py:221
+msgid "HEIGHT"
+msgstr "高度"
 
 #: danmaku2ass.py:221
 msgid "Reserve blank on the bottom of the stage"
-msgstr "Reserve blank on the bottom of the stage"
+msgstr "在舞台底部预留空位"
 
 #: danmaku2ass.py:222
 msgid "Reduce the amount of comments if stage is full"
-msgstr "Reduce the amount of comments if stage is full"
+msgstr "在舞台满时减少弹幕数量"
 
 #: danmaku2ass.py:223
 msgid "Comment file to be processed"
-msgstr "Comment file to be processed"
+msgstr "将要处理的弹幕文件"
+
+#: danmaku2ass.py:223
+msgid "FILE"
+msgstr "文件"
 
 #: danmaku2ass.py:230
 #, python-format
 msgid "Invalid stage size: %r"
-msgstr "Invalid stage size: %r"
+msgstr "无效舞台尺寸：%r"
 
 #: danmaku2ass.py:236
 #, python-format
 msgid "Unknown comment file format: %s"
-msgstr "Unknown comment file format: %s"
+msgstr "未知的弹幕文件格式：%s"

@@ -10,7 +10,7 @@ import sys
 import xml.dom.minidom
 
 
-gettext.install('messages', 'locale')
+gettext.install('danmaku2ass', 'locale')
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
@@ -212,15 +212,15 @@ def ConvertType2(row, height, bottomReserved):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output', metavar='OUTPUT', help=_('Output file'))
-    parser.add_argument('-s', '--size', metavar='WIDTHxHEIGHT', required=True, help=_('Stage size in pixels'))
-    parser.add_argument('-fn', '--font', metavar='FONT', help=_('Specify font face'), default=_('(FONT) sans-serif')[7:])
-    parser.add_argument('-fs', '--fontsize', metavar='SIZE', help=(_('Default font size')), type=float, default=25.0)
-    parser.add_argument('-a', '--alpha', metavar='ALPHA', help=_('Text opaque'), type=float, default=1.0)
-    parser.add_argument('-l', '--lifetime', metavar='SECONDS', help=_('Duration of comment display'), type=float, default=5.0)
-    parser.add_argument('-p', '--protect', metavar='HEIGHT', help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
+    parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
+    parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
+    parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face'), default=_('(FONT) sans-serif')[7:])
+    parser.add_argument('-fs', '--fontsize', metavar=_('SIZE'), help=(_('Default font size')), type=float, default=25.0)
+    parser.add_argument('-a', '--alpha', metavar=_('ALPHA'), help=_('Text opaque'), type=float, default=1.0)
+    parser.add_argument('-l', '--lifetime', metavar=_('SECONDS'), help=_('Duration of comment display'), type=float, default=5.0)
+    parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
-    parser.add_argument('file', metavar='FILE', nargs='+', help=_('Comment file to be processed'))
+    parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))
     args = parser.parse_args()
     try:
         width, height = str(args.size).split('x', 1)

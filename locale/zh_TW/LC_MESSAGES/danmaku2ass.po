@@ -1,8 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-20 18:20+0800\n"
+"POT-Creation-Date: 2013-09-30 23:13+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -20,6 +19,10 @@ msgid "Invalid comment: %r"
 msgstr "無效彈幕：%r"
 
 #: danmaku2ass.py:215
+msgid "OUTPUT"
+msgstr "輸出"
+
+#: danmaku2ass.py:215
 msgid "Output file"
 msgstr "輸出檔案"
 
@@ -27,9 +30,17 @@ msgstr "輸出檔案"
 msgid "Stage size in pixels"
 msgstr "舞臺尺寸的畫素數目"
 
+#: danmaku2ass.py:216
+msgid "WIDTHxHEIGHT"
+msgstr "寬x高"
+
 #: danmaku2ass.py:217
 msgid "(FONT) sans-serif"
 msgstr "(FONT) Microsoft JhengHei"
+
+#: danmaku2ass.py:217
+msgid "FONT"
+msgstr "字型"
 
 #: danmaku2ass.py:217
 msgid "Specify font face"
@@ -39,6 +50,14 @@ msgstr "指定字型名稱"
 msgid "Default font size"
 msgstr "默認字型大小"
 
+#: danmaku2ass.py:218
+msgid "SIZE"
+msgstr "尺寸"
+
+#: danmaku2ass.py:219
+msgid "ALPHA"
+msgstr "ALPHA"
+
 #: danmaku2ass.py:219
 msgid "Text opaque"
 msgstr "文字不透明度"
@@ -46,6 +65,14 @@ msgstr "文字不透明度"
 #: danmaku2ass.py:220
 msgid "Duration of comment display"
 msgstr "彈幕顯示時長"
+
+#: danmaku2ass.py:220
+msgid "SECONDS"
+msgstr "秒數"
+
+#: danmaku2ass.py:221
+msgid "HEIGHT"
+msgstr "高度"
 
 #: danmaku2ass.py:221
 msgid "Reserve blank on the bottom of the stage"
@@ -58,6 +85,10 @@ msgstr "在舞臺滿時減少彈幕數量"
 #: danmaku2ass.py:223
 msgid "Comment file to be processed"
 msgstr "將要處理的彈幕檔案"
+
+#: danmaku2ass.py:223
+msgid "FILE"
+msgstr "檔案"
 
 #: danmaku2ass.py:230
 #, python-format
