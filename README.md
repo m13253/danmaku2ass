@@ -55,7 +55,7 @@ optional arguments:
                         Duration of comment display
   -p HEIGHT, --protect HEIGHT
                         Reserve blank on the bottom of the stage
-  -r, --reduce          Reduce the amount of danmakus if stage is full
+  -r, --reduce          Reduce the amount of comments if stage is full
 ```
 
 FAQ
