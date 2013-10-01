@@ -1,6 +1,7 @@
 
 .PHONY: all install clean uninstall
 
+DESTDIR=
 PREFIX=/usr/local
 
 CP=cp
@@ -12,14 +13,14 @@ RM=rm -f -v
 all:
 
 install:
-	$(INSTALL) -Dm0755 danmaku2ass.py "$(PREFIX)/bin/danmaku2ass"
-	$(MKDIR) "$(PREFIX)/share"
-	$(CP) -R locale "$(PREFIX)/share/"
+	$(INSTALL) -Dm0755 danmaku2ass.py "$(DESTDIR)$(PREFIX)/bin/danmaku2ass"
+	$(MKDIR) "$(DESTDIR)$(PREFIX)/share"
+	$(CP) -R locale "$(DESTDIR)$(PREFIX)/share/"
 
 clean:
-	$(RM) danmaku2ass.pyo
+	$(RM) -R __pycache__
 
 uninstall:
-	$(RM) "$(PREFIX)/bin/danmaku2ass"
-	$(RM) "$(PREFIX)/share/locale/"*"/LC_MESSAGES/danmaku2ass."*
+	$(RM) "$(DESTDIR)$(PREFIX)/bin/danmaku2ass"
+	$(RM) "$(DESTDIR)$(PREFIX)/share/locale/"*"/LC_MESSAGES/danmaku2ass."*
 
