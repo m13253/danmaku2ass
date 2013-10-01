@@ -11,7 +11,7 @@ import sys
 import xml.dom.minidom
 
 
-gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locale'))
+gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0] or 'locale'))), 'locale'))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
