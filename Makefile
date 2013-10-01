@@ -24,5 +24,5 @@ clean:
 	$(RM) -R __pycache__
 
 uninstall:
-	$(RM) "$(DESTDIR)$(PREFIX)/bin/danmaku2ass" "$(DESTDIR)$(PREFIX)/share/danmaku2ass"
+	$(RM) -R "$(DESTDIR)$(PREFIX)/bin/danmaku2ass" "$(DESTDIR)$(PREFIX)/share/danmaku2ass"
 
