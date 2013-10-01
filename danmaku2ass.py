@@ -6,11 +6,12 @@ import gettext
 import json
 import logging
 import math
+import os
 import sys
 import xml.dom.minidom
 
 
-gettext.install('danmaku2ass', 'locale')
+gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'locale'))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
