@@ -22,7 +22,7 @@ Example usage
 ./danmaku2ass -o foo.ass -s 1920x1080 -fn "MS PGothic" -fs 48 -a 0.8 -l 5 foo.xml
 ```
 
-Name the output file with same basename but different extension (.ass) as the video. Put them into the same directory and most media players will automatically load them.
+Name the output file with same basename but different extension (.ass) as the video. Put them into the same directory and most media players will automatically load them. For MPlayer, you will have to specify `-ass` option.
 
 Make sure that the width/height ratio passed to `danmaku2ass` matches the one of your original video, or text deformation may be experienced.
 
