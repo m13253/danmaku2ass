@@ -91,6 +91,9 @@ def ProbeCommentFormat(f):
     if tmp == '[':
         f.seek(0)
         return 'Acfun'
+    if tmp == '{':
+        f.seek(0)
+        return 'sH5V'
     elif tmp == '<':
         tmp = f.read(39)
         f.seek(0)
@@ -134,6 +137,24 @@ def ReadCommentsNiconico(f, fontsize):
             logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
 
+
+def ReadCommentsSH5V (f, fontsize):
+    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
+    comment_element = json.load(f)
+    i = 0
+    for comment in comment_element["root"]["bgs"] :
+        try:
+            c_at = str(comment['at'])
+            c_type = str(comment['type'])
+#            c_date = str(comment['date'])
+            c_color = str(comment['color'])
+            c = str(comment['text'])
+            size = fontsize
+            yield (float(c_at), int(0), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:],16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            i += 1
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning(_('Invalid comment: %r') % comment)
+            continue
 
 def ReadCommentsAcfun(f, fontsize):
     'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
@@ -232,7 +253,7 @@ if __name__ == '__main__':
     comments = []
     for i in args.file:
         with open(i, 'r', encoding='utf-8') as f:
-            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili}[ProbeCommentFormat(f)]
+            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili,'sH5V': ReadCommentsSH5V}[ProbeCommentFormat(f)]
             if not CommentProcesser:
                 raise ValueError(_('Unknown comment file format: %s') % i)
             for comment in CommentProcesser(f, args.fontsize):
