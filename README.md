@@ -4,7 +4,7 @@ Danmaku2ASS
 What is it?
 -----------
 
-Danmaku2ASS converts comments from Niconico/Acfun/Bilibili to ASS format so that you can play it with any media player supporting ASS subtitle.
+Danmaku2ASS converts comments from Niconico/Acfun/Bilibili/sH5V to ASS format so that you can play it with any media player supporting ASS subtitle.
 
 This software is free software released under GPL 3 license. There is no warranty to the extent permitted by law.
 
@@ -88,3 +88,7 @@ Contributing
 
 Any contribution is welcome. Any donation is welcome as well.
 
+Screenshot
+------------
+
+<img src="ss.png" />
