@@ -146,11 +146,12 @@ def ReadCommentsSH5V (f, fontsize):
         try:
             c_at = str(comment['at'])
             c_type = str(comment['type'])
-#            c_date = str(comment['date'])
+            c_date = str(comment['timestamp'])
             c_color = str(comment['color'])
             c = str(comment['text'])
             size = fontsize
-            yield (float(c_at), int(0), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:],16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            #print(c_at,' ',round(float(c_at),2),' ',c)
+            yield (float(c_at), int(c_date), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:],16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
@@ -196,7 +197,8 @@ def ReadCommentsBilibili(f, fontsize):
 def ConvertTimestamp(timestamp):
     hour, minute = divmod(timestamp, 3600)
     minute, second = divmod(minute, 60)
-    centsecond = round(second*100.0)
+    #centsecond = round(second*100.0)
+    centsecond = round((timestamp-int(timestamp))*100)
     return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), centsecond)
 
 
