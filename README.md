@@ -28,6 +28,15 @@ Make sure that the width/height ratio passed to `danmaku2ass` matches the one of
 
 You can also pass multiple XML/JSON files and they will be merged into one ASS file. This is useful when watching danmakus from different website at the same time.
 
+Screenshot
+----------
+
+![5 Centimeters Per Second with Danmaku2ASS](screenshot.jpg)
+
+Video: _5 Centimeters Per Second_
+
+Source: http://www.bilibili.tv/video/av135209/
+
 Command line reference
 ----------------------
 
