@@ -79,7 +79,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
     if not (-1 < c[6]-fontsize < 1):
         styles += '{\\fs%s}' % round(c[6])
     if c[5] != 0xffffff:
-        styles += '{\\c&H%02X%02X%02x&}' % (c[5]&0xff, (c[5]>>8)&0xff, (c[5]>>16)&0xff)
+        styles += '{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff)
         if c[5] == 0x000000:
             styles += '{\\3c&HFFFFFF&}'
     f.write('Dialogue: 3,%(start)s,%(end)s,Default,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text})
@@ -179,11 +179,11 @@ def ReadCommentsBilibili(f, fontsize):
             continue
 
 
-def ReadCommentsSH5V (f, fontsize):
+def ReadCommentsSH5V(f, fontsize):
     'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     comment_element = json.load(f)
     i = 0
-    for comment in comment_element["root"]["bgs"] :
+    for comment in comment_element["root"]["bgs"]:
         try:
             c_at = str(comment['at'])
             c_type = str(comment['type'])
@@ -191,8 +191,7 @@ def ReadCommentsSH5V (f, fontsize):
             c_color = str(comment['color'])
             c = str(comment['text'])
             size = fontsize
-            #print(c_at,' ',round(float(c_at),2),' ',c)
-            yield (float(c_at), int(c_date), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:],16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            yield (float(c_at), int(c_date), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:], 16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
@@ -226,7 +225,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 
 def NeedWhiteBorder(rgb):
-    h, l, s = colorsys.rgb_to_hls(((rgb>>16)&0xff)/255, ((rgb>>8)&0xff)/255, (rgb&0xff)/255)
+    h, l, s = colorsys.rgb_to_hls(((rgb >> 16) & 0xff)/255.0, ((rgb >> 8) & 0xff)/255.0, (rgb & 0xff)/255.0)
     return (1/12 < h < 7/12 and l < 1/3) or l < 5/12
 
 
