@@ -92,9 +92,11 @@ def ProbeCommentFormat(f):
         f.seek(0)
         return 'Acfun'
     elif tmp == '{':
-        tmp = f.read(17)
+        tmp = f.read(14)
         f.seek(0)
-        if tmp == '"root":{"total":"':
+        if tmp == '"status_code":':
+            return 'Tudou'
+        elif tmp == '"root":{"total':
             return 'sH5V'
         else:
             return None
@@ -179,6 +181,25 @@ def ReadCommentsBilibili(f, fontsize):
             continue
 
 
+def ReadCommentsTudou(f, fontsize):
+    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
+    comment_element = json.load(f)
+    i = 0
+    for comment in comment_element['comment_list']:
+        try:
+            assert comment['pos'] in (3, 4, 6)
+            c = str(comment['data'])
+            assert comment['size'] in (0, 1, 2)
+            size = {0: 0.64, 1: 1, 2: 1.44}[comment['size']]*fontsize
+            yield (int(comment['replay_time']*0.001), int(comment['commit_time']), i, c, {3: 0, 4: 2, 6: 1}[comment['pos']], int(comment['color']), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            i += 1
+        except Exception:
+            raise
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning(_('Invalid comment: %r') % comment)
+            continue
+
+
 def ReadCommentsSH5V(f, fontsize):
     'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     comment_element = json.load(f)
@@ -258,7 +279,7 @@ if __name__ == '__main__':
     comments = []
     for i in args.file:
         with open(i, 'r', encoding='utf-8') as f:
-            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'sH5V': ReadCommentsSH5V}[ProbeCommentFormat(f)]
+            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'sH5V': ReadCommentsSH5V}[ProbeCommentFormat(f)]
             if not CommentProcesser:
                 raise ValueError(_('Unknown comment file format: %s') % i)
             for comment in CommentProcesser(f, args.fontsize):
