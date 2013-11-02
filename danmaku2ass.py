@@ -11,6 +11,9 @@ import sys
 import xml.dom.minidom
 
 
+__all__ = ["Danmaku2ASS"]
+
+
 gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0] or 'locale'))), 'locale'))
 
 
@@ -89,11 +92,8 @@ def ProbeCommentFormat(f):
 #
 
 
-NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
-
-
 def ReadCommentsNiconico(f, fontsize):
-    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
+    NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('chat')
     for comment in comment_element:
@@ -120,7 +120,6 @@ def ReadCommentsNiconico(f, fontsize):
 
 
 def ReadCommentsAcfun(f, fontsize):
-    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     comment_element = json.load(f)
     i = 0
     for comment in comment_element:
@@ -138,7 +137,6 @@ def ReadCommentsAcfun(f, fontsize):
 
 
 def ReadCommentsBilibili(f, fontsize):
-    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('d')
     i = 0
@@ -157,7 +155,6 @@ def ReadCommentsBilibili(f, fontsize):
 
 
 def ReadCommentsTudou(f, fontsize):
-    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     comment_element = json.load(f)
     i = 0
     for comment in comment_element['comment_list']:
@@ -176,7 +173,6 @@ def ReadCommentsTudou(f, fontsize):
 
 
 def ReadCommentsSH5V(f, fontsize):
-    'Output format: [(timeline, timestamp, no, comment, pos, color, size, height, width)]'
     comment_element = json.load(f)
     i = 0
     for comment in comment_element["root"]["bgs"]:
@@ -307,6 +303,34 @@ def NeedWhiteBorder(rgb):
     return (1/12 < h < 7/12 and l < 1/3) or l < 5/12
 
 
+def ConvertToFile(filename_or_file, *args, **kwargs):
+    if isinstance(filename_or_file, str):
+        return open(filename_or_file, *args, **kwargs)
+    else:
+        return filename_or_file
+
+
+def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False):
+    comments = []
+    for i in input_files:
+        with ConvertToFile(i, 'r', encoding='utf-8') as f:
+            CommentProcesser = CommentFormatMap[ProbeCommentFormat(f)]
+            if not CommentProcesser:
+                raise ValueError(_('Unknown comment file format: %s') % i)
+            for comment in CommentProcesser(f, font_size):
+                comments.append(comment)
+    try:
+        if output_file:
+            fo = ConvertToFile(output_file, 'w', encoding='utf-8', newline='\r\n')
+        else:
+            fo = sys.stdout
+        comments.sort()
+        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opaque, comment_duration, is_reduce_comments)
+    finally:
+        if output_file:
+            fo.close()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
@@ -325,22 +349,7 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
-    comments = []
-    for i in args.file:
-        with open(i, 'r', encoding='utf-8') as f:
-            CommentProcesser = CommentFormatMap[ProbeCommentFormat(f)]
-            if not CommentProcesser:
-                raise ValueError(_('Unknown comment file format: %s') % i)
-            for comment in CommentProcesser(f, args.fontsize):
-                comments.append(comment)
-    if args.output:
-        fo = open(args.output, 'w', encoding='utf-8', newline='\r\n')
-    else:
-        fo = sys.stdout
-    comments.sort()
-    ProcessComments(comments, fo, width, height, args.protect, args.font, args.fontsize, args.alpha, args.lifetime, args.reduce)
-    if args.output:
-        fo.close()
+    Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.lifetime, args.reduce)
 
 
 if __name__ == '__main__':
