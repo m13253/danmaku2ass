@@ -59,6 +59,36 @@ def ProbeCommentFormat(f):
         return None
 
 
+#
+# ReadComments**** protocol
+#
+# Input:
+#     f:         Input file
+#     fontsize:  Default font size
+#
+# Output:
+#     yield a tuple:
+#         (timeline, timestamp, no, comment, pos, color, size, height, width)
+#     timeline:  The position when the comment is replayed
+#     timestamp: The UNIX timestamp when the comment is submitted
+#     no:        A sequence of 1, 2, 3, ..., used for sorting
+#     comment:   The content of the comment
+#     pos:       0 for regular moving comment,
+#                1 for bottom centered comment,
+#                2 for top centered comment
+#     color:     Font color represented in 0xRRGGBB,
+#                e.g. 0xffffff for white
+#     size:      Font size
+#     height:    The estimated height in pixels
+#                i.e. (comment.count('\n')+1)*size
+#     width:     The estimated width in pixels
+#                i.e. CalculateLength(comment)*size
+#
+# After implementing ReadComments****, make sure to update ProbeCommentFormat
+# and CommentFormatMap.
+#
+
+
 NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
 
 
@@ -164,6 +194,9 @@ def ReadCommentsSH5V(f, fontsize):
             continue
 
 
+CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'sH5V': ReadCommentsSH5V}
+
+
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
     WriteASSHead(f, width, height, fontface, fontsize, alpha)
     rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
@@ -255,7 +288,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
 
 
 def CalculateLength(s):
-    return max(map(len, s.split('\n')))
+    return max(map(len, s.split('\n')))  # May not be accurate
 
 
 def ConvertTimestamp(timestamp):
@@ -295,7 +328,7 @@ def main():
     comments = []
     for i in args.file:
         with open(i, 'r', encoding='utf-8') as f:
-            CommentProcesser = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'sH5V': ReadCommentsSH5V}[ProbeCommentFormat(f)]
+            CommentProcesser = CommentFormatMap[ProbeCommentFormat(f)]
             if not CommentProcesser:
                 raise ValueError(_('Unknown comment file format: %s') % i)
             for comment in CommentProcesser(f, args.fontsize):
