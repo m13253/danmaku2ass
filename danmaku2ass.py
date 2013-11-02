@@ -339,6 +339,8 @@ def ConvertToFile(filename_or_file, *args, **kwargs):
 
 
 def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False):
+    if isinstance(input_files, str):
+        input_files = [input_files]
     comments = []
     for i in input_files:
         with ConvertToFile(i, 'r', encoding='utf-8') as f:
