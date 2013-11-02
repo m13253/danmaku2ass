@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import calendar
 import colorsys
 import gettext
 import json
@@ -9,6 +10,7 @@ import math
 import os
 import random
 import sys
+import time
 import xml.dom.minidom
 
 
@@ -28,7 +30,17 @@ def SeekZero(function):
     return decorated_function
 
 
+def EOFAsNone(function):
+    def decorated_function(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except EOFError:
+            return None
+    return decorated_function
+
+
 @SeekZero
+@EOFAsNone
 def ProbeCommentFormat(f):
     tmp = f.read(1)
     if tmp == '[':
@@ -39,8 +51,6 @@ def ProbeCommentFormat(f):
             return 'Tudou'
         elif tmp == '"root":{"total':
             return 'sH5V'
-        else:
-            return None
     elif tmp == '<':
         tmp = f.read(1)
         if tmp == '?':
@@ -53,14 +63,10 @@ def ProbeCommentFormat(f):
                 return 'Bilibili'  # tucao.cc, with the same file format as Bilibili
             elif tmp == 'xml version="1.0" encoding="Utf-8"?>\n<':
                 return 'Bilibili'  # Komica, with the same file format as Bilibili
-            else:
-                return None
+            elif tmp == 'xml version="1.0" encoding="UTF-8"?>\n<':
+                return 'MioMio'
         elif tmp == 'p':
             return 'Niconico'  # Himawari Douga, with the same file format as Niconico Douga
-        else:
-            return None
-    else:
-        return None
 
 
 #
@@ -173,6 +179,24 @@ def ReadCommentsTudou(f, fontsize):
             continue
 
 
+def ReadCommentsMioMio(f, fontsize):
+    NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
+    dom = xml.dom.minidom.parse(f)
+    comment_element = dom.getElementsByTagName('data')
+    i = 0
+    for comment in comment_element:
+        try:
+            message = comment.getElementsByTagName('message')[0]
+            c = str(message.childNodes[0].wholeText)
+            pos = 0
+            size = int(message.getAttribute('fontsize'))*fontsize/25.0
+            yield (float(comment.getElementsByTagName('playTime')[0].childNodes[0].wholeText), int(calendar.timegm(time.strptime(comment.getElementsByTagName('times')[0].childNodes[0].wholeText, '%Y-%m-%d %H:%M:%S')))+28800, i, c, {'1': 0, '4': 2, '5': 1}[message.getAttribute('mode')], int(message.getAttribute('color')), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            i += 1
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning(_('Invalid comment: %s') % comment.toxml())
+            continue
+
+
 def ReadCommentsSH5V(f, fontsize):
     comment_element = json.load(f)
     i = 0
@@ -191,7 +215,7 @@ def ReadCommentsSH5V(f, fontsize):
             continue
 
 
-CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'sH5V': ReadCommentsSH5V}
+CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'MioMio': ReadCommentsMioMio, 'sH5V': ReadCommentsSH5V}
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
