@@ -7,6 +7,7 @@ import json
 import logging
 import math
 import os
+import random
 import sys
 import xml.dom.minidom
 
@@ -194,7 +195,8 @@ CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadC
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
-    WriteASSHead(f, width, height, fontface, fontsize, alpha)
+    styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
+    WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
     rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
     for i in comments:
         row = 0
@@ -203,7 +205,7 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
             freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
             if freerows >= i[7]:
                 MarkCommentRow(rows, i, row)
-                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime)
+                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
                 break
             else:
                 row += freerows or 1
@@ -211,7 +213,7 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
             if not reduced:
                 row = FindAlternativeRow(rows, i, height, bottomReserved)
                 MarkCommentRow(rows, i, row)
-                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime)
+                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
 
 
 def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
@@ -247,7 +249,7 @@ def MarkCommentRow(rows, c, row):
         pass
 
 
-def WriteASSHead(f, width, height, fontface, fontsize, alpha):
+def WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid):
     f.write(
 '''\ufeff
 [Script Info]
@@ -258,15 +260,15 @@ PlayResY: %(height)s
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 7, 20, 20, 20, 0
+Style: %(styleid)s, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, 1, 0, 7, 20, 20, 20, 0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': round(fontsize), 'alpha': 255-round(alpha*255)}
+''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': round(fontsize), 'alpha': 255-round(alpha*255), 'styleid': styleid}
     )
 
 
-def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
+def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, styleid):
     text = c[3].replace('\\', '\\\\').replace('\n', '\\N')
     if c[4] == 1:
         styles = '{\\an8}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
@@ -280,7 +282,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
         styles += '{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff)
         if c[5] == 0x000000:
             styles += '{\\3c&HFFFFFF&}'
-    f.write('Dialogue: 3,%(start)s,%(end)s,Default,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text})
+    f.write('Dialogue: 3,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text, 'styleid': styleid})
 
 
 def CalculateLength(s):
