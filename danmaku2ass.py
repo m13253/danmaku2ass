@@ -111,6 +111,8 @@ def ProbeCommentFormat(f):
                 return 'Bilibili'
             elif tmp == 'xml version="1.0" encoding="utf-8"?><i':
                 return 'Bilibili'  # tucao.cc, with the same file format as Bilibili
+            elif tmp == 'xml version="1.0" encoding="Utf-8"?>\n<':
+                return 'Bilibili'  # Komica, with the same file format as Bilibili
             else:
                 return None
         elif tmp == 'p':
