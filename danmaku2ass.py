@@ -101,13 +101,21 @@ def ProbeCommentFormat(f):
         else:
             return None
     elif tmp == '<':
-        tmp = f.read(39)
-        f.seek(0)
-        if tmp == '?xml version="1.0" encoding="UTF-8"?><p':
-            return 'Niconico'
-        elif tmp == '?xml version="1.0" encoding="UTF-8"?><i':
-            return 'Bilibili'
+        tmp = f.read(1)
+        if tmp == '?':
+            tmp = f.read(38)
+            f.seek(0)
+            if tmp == 'xml version="1.0" encoding="UTF-8"?><p':
+                return 'Niconico'
+            elif tmp == 'xml version="1.0" encoding="UTF-8"?><i':
+                return 'Bilibili'
+            else:
+                return None
+        elif tmp == 'p':
+            f.seek(0)
+            return 'Niconico'  # Himawari Douga, with the same file format as Niconico Douga
         else:
+            f.seek(0)
             return None
     else:
         f.seek(0)
