@@ -14,86 +14,23 @@ import xml.dom.minidom
 gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0] or 'locale'))), 'locale'))
 
 
-def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
-    WriteASSHead(f, width, height, fontface, fontsize, alpha)
-    rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
-    for i in comments:
-        row = 0
-        rowmax = height-bottomReserved-i[7]
-        while row < rowmax:
-            freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
-            if freerows >= i[7]:
-                MarkCommentRow(rows, i, row)
-                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime)
-                break
-            else:
-                row += freerows or 1
-        else:
-            if not reduced:
-                row = FindAlternativeRow(rows, i, height, bottomReserved)
-                MarkCommentRow(rows, i, row)
-                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime)
+def SeekZero(function):
+    def decorated_function(file_):
+        file_.seek(0)
+        try:
+            return function(file_)
+        finally:
+            file_.seek(0)
+    return decorated_function
 
 
-def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
-    res = 0
-    rowmax = height-bottomReserved-c[7]
-    while row < rowmax and res < c[7]:
-        if c[4] in (1, 2):
-            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime > c[0]:
-                break
-        else:
-            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime*(rows[c[4]][row][8]+c[8])/width > c[0]:
-                break
-        row += 1
-        res += 1
-    return res
-
-
-def FindAlternativeRow(rows, c, height, bottomReserved):
-    res = 0
-    for row in range(height-bottomReserved-math.ceil(c[7])):
-        if not rows[c[4]][row]:
-            return row
-        elif rows[c[4]][row][0] < rows[c[4]][res][0]:
-            res = row
-    return res
-
-
-def MarkCommentRow(rows, c, row):
-    try:
-        for i in range(row, row+math.ceil(c[7])):
-            rows[c[4]][i] = c
-    except IndexError:
-        pass
-
-
-def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
-    text = c[3].replace('\\', '\\\\').replace('\n', '\\N')
-    if c[4] == 1:
-        styles = '{\\an8}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
-    elif c[4] == 2:
-        styles = '{\\an2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)}
-    else:
-        styles = '{\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)}' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])}
-    if not (-1 < c[6]-fontsize < 1):
-        styles += '{\\fs%s}' % round(c[6])
-    if c[5] != 0xffffff:
-        styles += '{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff)
-        if c[5] == 0x000000:
-            styles += '{\\3c&HFFFFFF&}'
-    f.write('Dialogue: 3,%(start)s,%(end)s,Default,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text})
-
-
+@SeekZero
 def ProbeCommentFormat(f):
-    f.seek(0)
     tmp = f.read(1)
     if tmp == '[':
-        f.seek(0)
         return 'Acfun'
     elif tmp == '{':
         tmp = f.read(14)
-        f.seek(0)
         if tmp == '"status_code":':
             return 'Tudou'
         elif tmp == '"root":{"total':
@@ -104,7 +41,6 @@ def ProbeCommentFormat(f):
         tmp = f.read(1)
         if tmp == '?':
             tmp = f.read(38)
-            f.seek(0)
             if tmp == 'xml version="1.0" encoding="UTF-8"?><p':
                 return 'Niconico'
             elif tmp == 'xml version="1.0" encoding="UTF-8"?><i':
@@ -116,13 +52,10 @@ def ProbeCommentFormat(f):
             else:
                 return None
         elif tmp == 'p':
-            f.seek(0)
             return 'Niconico'  # Himawari Douga, with the same file format as Niconico Douga
         else:
-            f.seek(0)
             return None
     else:
-        f.seek(0)
         return None
 
 
@@ -231,11 +164,58 @@ def ReadCommentsSH5V(f, fontsize):
             continue
 
 
-def ConvertTimestamp(timestamp):
-    hour, minute = divmod(timestamp, 3600)
-    minute, second = divmod(minute, 60)
-    centsecond = round((second-int(second))*100.0)
-    return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), centsecond)
+def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
+    WriteASSHead(f, width, height, fontface, fontsize, alpha)
+    rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
+    for i in comments:
+        row = 0
+        rowmax = height-bottomReserved-i[7]
+        while row < rowmax:
+            freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
+            if freerows >= i[7]:
+                MarkCommentRow(rows, i, row)
+                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime)
+                break
+            else:
+                row += freerows or 1
+        else:
+            if not reduced:
+                row = FindAlternativeRow(rows, i, height, bottomReserved)
+                MarkCommentRow(rows, i, row)
+                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime)
+
+
+def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
+    res = 0
+    rowmax = height-bottomReserved-c[7]
+    while row < rowmax and res < c[7]:
+        if c[4] in (1, 2):
+            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime > c[0]:
+                break
+        else:
+            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime*(rows[c[4]][row][8]+c[8])/width > c[0]:
+                break
+        row += 1
+        res += 1
+    return res
+
+
+def FindAlternativeRow(rows, c, height, bottomReserved):
+    res = 0
+    for row in range(height-bottomReserved-math.ceil(c[7])):
+        if not rows[c[4]][row]:
+            return row
+        elif rows[c[4]][row][0] < rows[c[4]][res][0]:
+            res = row
+    return res
+
+
+def MarkCommentRow(rows, c, row):
+    try:
+        for i in range(row, row+math.ceil(c[7])):
+            rows[c[4]][i] = c
+    except IndexError:
+        pass
 
 
 def WriteASSHead(f, width, height, fontface, fontsize, alpha):
@@ -257,20 +237,44 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     )
 
 
-def NeedWhiteBorder(rgb):
-    h, l, s = colorsys.rgb_to_hls(((rgb >> 16) & 0xff)/255.0, ((rgb >> 8) & 0xff)/255.0, (rgb & 0xff)/255.0)
-    return (1/12 < h < 7/12 and l < 1/3) or l < 5/12
+def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime):
+    text = c[3].replace('\\', '\\\\').replace('\n', '\\N')
+    if c[4] == 1:
+        styles = '{\\an8}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
+    elif c[4] == 2:
+        styles = '{\\an2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)}
+    else:
+        styles = '{\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)}' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])}
+    if not (-1 < c[6]-fontsize < 1):
+        styles += '{\\fs%s}' % round(c[6])
+    if c[5] != 0xffffff:
+        styles += '{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff)
+        if c[5] == 0x000000:
+            styles += '{\\3c&HFFFFFF&}'
+    f.write('Dialogue: 3,%(start)s,%(end)s,Default,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text})
 
 
 def CalculateLength(s):
     return max(map(len, s.split('\n')))
 
 
+def ConvertTimestamp(timestamp):
+    hour, minute = divmod(timestamp, 3600)
+    minute, second = divmod(minute, 60)
+    centsecond = round((second-int(second))*100.0)
+    return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), centsecond)
+
+
 def ConvertType2(row, height, bottomReserved):
     return height-bottomReserved-row
 
 
-if __name__ == '__main__':
+def NeedWhiteBorder(rgb):
+    h, l, s = colorsys.rgb_to_hls(((rgb >> 16) & 0xff)/255.0, ((rgb >> 8) & 0xff)/255.0, (rgb & 0xff)/255.0)
+    return (1/12 < h < 7/12 and l < 1/3) or l < 5/12
+
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
@@ -304,3 +308,7 @@ if __name__ == '__main__':
     ProcessComments(comments, fo, width, height, args.protect, args.font, args.fontsize, args.alpha, args.lifetime, args.reduce)
     if args.output:
         fo.close()
+
+
+if __name__ == '__main__':
+    main()
