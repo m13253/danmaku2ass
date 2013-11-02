@@ -109,6 +109,8 @@ def ProbeCommentFormat(f):
                 return 'Niconico'
             elif tmp == 'xml version="1.0" encoding="UTF-8"?><i':
                 return 'Bilibili'
+            elif tmp == 'xml version="1.0" encoding="utf-8"?><i':
+                return 'Bilibili'  # tucao.cc, with the same file format as Bilibili
             else:
                 return None
         elif tmp == 'p':
@@ -178,7 +180,7 @@ def ReadCommentsBilibili(f, fontsize):
     for comment in comment_element:
         try:
             p = str(comment.getAttribute('p')).split(',')
-            assert len(p) >= 8
+            assert len(p) >= 5
             assert p[1] in ('1', '4', '5')
             c = str(comment.childNodes[0].wholeText).replace('/n', '\\n')
             size = int(p[2])*fontsize/25.0
