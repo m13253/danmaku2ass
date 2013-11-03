@@ -4,11 +4,13 @@ import argparse
 import calendar
 import colorsys
 import gettext
+import io
 import json
 import logging
 import math
 import os
 import random
+import re
 import sys
 import time
 import xml.dom.minidom
@@ -338,6 +340,12 @@ def ConvertToFile(filename_or_file, *args, **kwargs):
         return filename_or_file
 
 
+def FilterBadChars(f):
+    s = f.read()
+    s = re.sub('[\\x00-\\x19]', '\ufffd', s)
+    return io.StringIO(s)
+
+
 def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False):
     if isinstance(input_files, str):
         input_files = [input_files]
@@ -347,7 +355,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
             CommentProcesser = CommentFormatMap[ProbeCommentFormat(f)]
             if not CommentProcesser:
                 raise ValueError(_('Unknown comment file format: %s') % i)
-            for comment in CommentProcesser(f, font_size):
+            for comment in CommentProcesser(FilterBadChars(f), font_size):
                 comments.append(comment)
     try:
         if output_file:
