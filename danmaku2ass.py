@@ -132,8 +132,7 @@ def ReadCommentsNiconico(f, fontsize):
 
 def ReadCommentsAcfun(f, fontsize):
     comment_element = json.load(f)
-    i = 0
-    for comment in comment_element:
+    for i, comment in enumerate(comment_element):
         try:
             p = str(comment['c']).split(',')
             assert len(p) >= 6
@@ -141,7 +140,6 @@ def ReadCommentsAcfun(f, fontsize):
             c = str(comment['m'])
             size = int(p[3])*fontsize/25.0
             yield (float(p[0]), int(p[5]), i, c, {'1': 0, '2': 0, '4': 2, '5': 1}[p[2]], int(p[1]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
-            i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
             continue
@@ -150,8 +148,7 @@ def ReadCommentsAcfun(f, fontsize):
 def ReadCommentsBilibili(f, fontsize):
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('d')
-    i = 0
-    for comment in comment_element:
+    for i, comment in enumerate(comment_element):
         try:
             p = str(comment.getAttribute('p')).split(',')
             assert len(p) >= 5
@@ -159,7 +156,6 @@ def ReadCommentsBilibili(f, fontsize):
             c = str(comment.childNodes[0].wholeText).replace('/n', '\\n')
             size = int(p[2])*fontsize/25.0
             yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
-            i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
@@ -167,17 +163,13 @@ def ReadCommentsBilibili(f, fontsize):
 
 def ReadCommentsTudou(f, fontsize):
     comment_element = json.load(f)
-    i = 0
-    for comment in comment_element['comment_list']:
+    for i, comment in enumerate(comment_element['comment_list']):
         try:
             assert comment['pos'] in (3, 4, 6)
             c = str(comment['data'])
             assert comment['size'] in (0, 1, 2)
             size = {0: 0.64, 1: 1, 2: 1.44}[comment['size']]*fontsize
             yield (int(comment['replay_time']*0.001), int(comment['commit_time']), i, c, {3: 0, 4: 2, 6: 1}[comment['pos']], int(comment['color']), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
-            i += 1
-        except Exception:
-            raise
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
             continue
@@ -187,15 +179,13 @@ def ReadCommentsMioMio(f, fontsize):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('data')
-    i = 0
-    for comment in comment_element:
+    for i, comment in enumerate(comment_element):
         try:
             message = comment.getElementsByTagName('message')[0]
             c = str(message.childNodes[0].wholeText)
             pos = 0
             size = int(message.getAttribute('fontsize'))*fontsize/25.0
             yield (float(comment.getElementsByTagName('playTime')[0].childNodes[0].wholeText), int(calendar.timegm(time.strptime(comment.getElementsByTagName('times')[0].childNodes[0].wholeText, '%Y-%m-%d %H:%M:%S')))-28800, i, c, {'1': 0, '4': 2, '5': 1}[message.getAttribute('mode')], int(message.getAttribute('color')), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
-            i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
@@ -203,8 +193,7 @@ def ReadCommentsMioMio(f, fontsize):
 
 def ReadCommentsSH5V(f, fontsize):
     comment_element = json.load(f)
-    i = 0
-    for comment in comment_element["root"]["bgs"]:
+    for i, comment in enumerate(comment_element["root"]["bgs"]):
         try:
             c_at = str(comment['at'])
             c_type = str(comment['type'])
@@ -213,7 +202,6 @@ def ReadCommentsSH5V(f, fontsize):
             c = str(comment['text'])
             size = fontsize
             yield (float(c_at), int(c_date), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:], 16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
-            i += 1
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
             continue
