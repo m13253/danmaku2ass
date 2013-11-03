@@ -336,7 +336,7 @@ def ConvertToFile(filename_or_file, *args, **kwargs):
 
 def FilterBadChars(f):
     s = f.read()
-    s = re.sub('[\\x00-\\x19]', '\ufffd', s)
+    s = re.sub('[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f]', '\ufffd', s)
     return io.StringIO(s)
 
 
