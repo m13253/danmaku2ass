@@ -222,11 +222,13 @@ def ReadCommentsSH5V(f, fontsize):
 CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'MioMio': ReadCommentsMioMio, 'sH5V': ReadCommentsSH5V}
 
 
-def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced):
+def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
     rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
-    for i in comments:
+    for idx, i in enumerate(comments):
+        if progress_callback and idx%1000 == 0:
+            progress_callback(idx, len(comments))
         row = 0
         rowmax = height-bottomReserved-i[7]
         while row < rowmax:
@@ -242,6 +244,8 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
                 row = FindAlternativeRow(rows, i, height, bottomReserved)
                 MarkCommentRow(rows, i, row)
                 WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
+    if progress_callback:
+        progress_callback(len(comments), len(comments))
 
 
 def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
@@ -348,7 +352,7 @@ def FilterBadChars(f):
     return io.StringIO(s)
 
 
-def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False):
+def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False, progress_callback=None):
     if isinstance(input_files, str):
         input_files = [input_files]
     comments = []
@@ -365,7 +369,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
         else:
             fo = sys.stdout
         comments.sort()
-        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opaque, comment_duration, is_reduce_comments)
+        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opaque, comment_duration, is_reduce_comments, progress_callback)
     finally:
         if output_file:
             fo.close()
