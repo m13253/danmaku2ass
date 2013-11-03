@@ -15,7 +15,7 @@ all:
 
 install:
 	$(MKDIR) "$(DESTDIR)$(PREFIX)/share/danmaku2ass"
-	$(INSTALL) -Dm0755 danmaku2ass.py "$(DESTDIR)$(PREFIX)/share/danmaku2ass"
+	$(INSTALL) -Dm0755 danmaku2ass.py "$(DESTDIR)$(PREFIX)/share/danmaku2ass/danmaku2ass.py"
 	$(CP) -R locale "$(DESTDIR)$(PREFIX)/share/danmaku2ass/"
 	$(MKDIR) "$(DESTDIR)$(PREFIX)/bin"
 	$(LN) -s "$(PREFIX)/share/danmaku2ass/danmaku2ass.py" "$(DESTDIR)$(PREFIX)/bin/danmaku2ass"
