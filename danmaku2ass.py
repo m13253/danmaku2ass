@@ -16,8 +16,6 @@ import time
 import xml.dom.minidom
 
 
-__all__ = ["Danmaku2ASS"]
-
 if sys.version_info < (3,):
     raise RuntimeError('at least Python 3.0 is required')
 
@@ -215,7 +213,7 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
     rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
     for idx, i in enumerate(comments):
-        if progress_callback and idx%1000 == 0:
+        if progress_callback and idx % 1000 == 0:
             progress_callback(idx, len(comments))
         row = 0
         rowmax = height-bottomReserved-i[7]
@@ -340,27 +338,54 @@ def FilterBadChars(f):
     return io.StringIO(s)
 
 
+def export(func):
+    global __all__
+    try:
+        __all__.append(func.__name__)
+    except NameError:
+        __all__ = [func.__name__]
+    return func
+
+
+@export
 def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False, progress_callback=None):
-    if isinstance(input_files, str):
-        input_files = [input_files]
-    comments = []
-    for i in input_files:
-        with ConvertToFile(i, 'r', encoding='utf-8') as f:
-            CommentProcesser = CommentFormatMap[ProbeCommentFormat(f)]
-            if not CommentProcesser:
-                raise ValueError(_('Unknown comment file format: %s') % i)
-            for comment in CommentProcesser(FilterBadChars(f), font_size):
-                comments.append(comment)
+    comments = ReadComments(input_files, font_size)
     try:
         if output_file:
             fo = ConvertToFile(output_file, 'w', encoding='utf-8', newline='\r\n')
         else:
             fo = sys.stdout
-        comments.sort()
         ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opaque, comment_duration, is_reduce_comments, progress_callback)
     finally:
         if output_file:
             fo.close()
+
+
+@export
+def ReadComments(input_files, font_size=25.0, progress_callback=None):
+    if isinstance(input_files, str):
+        input_files = [input_files]
+    else:
+        input_files = list(input_files)
+    comments = []
+    for idx, i in enumerate(input_files):
+        if progress_callback:
+            progress_callback(idx, len(input_files))
+        with ConvertToFile(i, 'r', encoding='utf-8') as f:
+            CommentProcessor = GetCommentProcessor(f)
+            if not CommentProcessor:
+                raise ValueError(_('Unknown comment file format: %s') % i)
+            for comment in CommentProcessor(FilterBadChars(f), font_size):
+                comments.append(comment)
+    if progress_callback:
+        progress_callback(len(input_files), len(input_files))
+    comments.sort()
+    return comments
+
+
+@export
+def GetCommentProcessor(input_file):
+    return CommentFormatMap[ProbeCommentFormat(input_file)]
 
 
 def main():
