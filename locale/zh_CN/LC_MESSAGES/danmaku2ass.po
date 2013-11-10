@@ -36,7 +36,7 @@ msgstr "宽x高"
 
 #: danmaku2ass.py:217
 msgid "(FONT) sans-serif"
-msgstr "(FONT) 黑体"
+msgstr "(FONT) SimHei"
 
 #: danmaku2ass.py:217
 msgid "FONT"
