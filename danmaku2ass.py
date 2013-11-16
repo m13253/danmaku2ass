@@ -254,7 +254,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             return GetPosition(InputPos, isHeight)
     try:
         comment_args = safe_list(json.loads(c[3]))
-        text = str(comment_args[4]).replace('\\', '\\\\').replace('/n', '\\N')
+        text = str(comment_args[4]).replace('\\', '\\\\').replace('/n', '\\N').replace('{', '\\{').replace('}', '\\}')
         from_x = comment_args.get(0, 0)
         from_y = comment_args.get(1, 0)
         to_x = comment_args.get(7, from_x)
@@ -277,27 +277,27 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         isborder = comment_args.get(11, 'true')
         styles = []
         if (from_x, from_y) == (to_x, to_y):
-            styles.append('{\\pos(%s, %s)}' % (from_x, from_y))
+            styles.append('\\pos(%s, %s)' % (from_x, from_y))
         else:
-            styles.append('{\\move(%s, %s, %s, %s, %s, %s)}' % (from_x, from_y, to_x, to_y, delay, delay+duration))
+            styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_x, from_y, to_x, to_y, delay, delay+duration))
         if rotate_z != 0:
-            styles.append('{\\frz%s}' % rotate_z)
+            styles.append('\\frz%s' % rotate_z)
         if rotate_y != 0:
-            styles.append('{\\fry%s}' % rotate_y)
+            styles.append('\\fry%s' % rotate_y)
         if fontface:
-            styles.append('{\\fn%s}' % fontface)
-        styles.append('{\\fs%s}' % round(c[6]*ZoomFactor[0]))
+            styles.append('\\fn%s' % fontface.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}'))
+        styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
         if c[5] != 0xffffff:
-            styles.append('{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+            styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
             if c[5] == 0x000000:
-                styles.append('{\\3c&HFFFFFF&}')
+                styles.append('\\3c&HFFFFFF&')
         if from_alpha == to_alpha:
-            styles.append('{\\alpha&H%02X}' % from_alpha)
+            styles.append('\\alpha&H%02X' % from_alpha)
         else:
-            styles.append('{\\fade(%(from_alpha)s,%(to_alpha)s,%(to_alpha)s,%(start_time)s,%(end_time)s,%(end_time)s,%(end_time)s)}' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'start_time': delay, 'end_time': delay+duration})
+            styles.append('\\fade(%(from_alpha)s,%(to_alpha)s,%(to_alpha)s,%(start_time)s,%(end_time)s,%(end_time)s,%(end_time)s)' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'start_time': delay, 'end_time': delay+duration})
         if isborder == 'false':
-            styles.append('{\\bord0}')
-        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+            styles.append('\\bord0')
+        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
     except ValueError as e:
         try:
             logging.warning(_('Invalid comment: %r') % c[3])
@@ -391,20 +391,21 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 
 
 def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, styleid):
-    text = c[3].replace('\\', '\\\\').replace('\n', '\\N')
+    text = c[3].replace('\\', '\\\\').replace('\n', '\\N').replace('{', '\\{').replace('}', '\\}')
+    styles = []
     if c[4] == 1:
-        styles = '{\\an8}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': row}
+        styles.append('\\an8\\pos(%(halfwidth)s, %(row)s)' % {'halfwidth': round(width/2), 'row': row})
     elif c[4] == 2:
-        styles = '{\\an2}{\\pos(%(halfwidth)s, %(row)s)}' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)}
+        styles.append('\\an2\\pos(%(halfwidth)s, %(row)s)' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)})
     else:
-        styles = '{\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)}' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])}
+        styles.append('\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
     if not (-1 < c[6]-fontsize < 1):
-        styles += '{\\fs%s}' % round(c[6])
+        styles.append('\\fs%s' % round(c[6]))
     if c[5] != 0xffffff:
-        styles += '{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff)
+        styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
         if c[5] == 0x000000:
-            styles += '{\\3c&HFFFFFF&}'
-    f.write('Dialogue: 3,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': styles, 'text': text, 'styleid': styleid})
+            styles.append('\\3c&HFFFFFF&')
+    f.write('Dialogue: 2,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
 
 
 def CalculateLength(s):
