@@ -412,10 +412,10 @@ def CalculateLength(s):
 
 
 def ConvertTimestamp(timestamp):
-    timestamp = round(timestamp*100.0)/100.0
-    hour, minute = divmod(timestamp, 3600)
-    minute, second = divmod(minute, 60)
-    centsecond = second-int(second)
+    timestamp = round(timestamp*100.0)
+    hour, minute = divmod(timestamp, 360000)
+    minute, second = divmod(minute, 6000)
+    second, centsecond = divmod(second, 100)
     return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), int(centsecond))
 
 
