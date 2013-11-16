@@ -150,10 +150,14 @@ def ReadCommentsBilibili(f, fontsize):
         try:
             p = str(comment.getAttribute('p')).split(',')
             assert len(p) >= 5
-            assert p[1] in ('1', '4', '5')
-            c = str(comment.childNodes[0].wholeText).replace('/n', '\n')
-            size = int(p[2])*fontsize/25.0
-            yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            assert p[1] in ('1', '4', '5', '7')
+            if p[1] != '7':
+                c = str(comment.childNodes[0].wholeText).replace('/n', '\n')
+                size = int(p[2])*fontsize/25.0
+                yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            else:  # positioned comment
+                c = str(comment.childNodes[0].wholeText)
+                yield (float(p[0]), int(p[4]), i, c, 'bilipos', int(p[3]), int(p[2]), 0, 0)
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
@@ -208,6 +212,48 @@ def ReadCommentsSH5V(f, fontsize):
 CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'MioMio': ReadCommentsMioMio, 'sH5V': ReadCommentsSH5V}
 
 
+def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
+    try:
+        comment_args = safe_list(json.loads(c[3]))
+        text = str(comment_args[4]).replace('\\', '\\\\').replace('/n', '\\N')
+        from_x = int(comment_args.get(0, 0))
+        from_y = int(comment_args.get(1, 0))
+        to_x = int(comment_args.get(7, from_x))
+        to_y = int(comment_args.get(7, from_y))
+        alpha = safe_list(str(comment_args.get(3, '1')).split('-'))
+        from_alpha = float(alpha.get(0, 1))
+        to_alpha = float(alpha.get(1, from_alpha))
+        from_alpha = 255-round(from_alpha*255)
+        to_alpha = 255-round(to_alpha*255)
+        lifetime = float(comment_args.get(3, 4500))
+        duration = float(comment_args.get(9, lifetime*1000))
+        delay = float(comment_args.get(10, 0))
+        fontface = comment_args.get(12)
+        isborder = comment_args.get(11, 'true')
+        styles = []
+        if fontface:
+            styles.append('{\\fn%s}' % fontface)
+        styles.append('{\\fs%s}' % round(c[6]))
+        if c[5] != 0xffffff:
+            styles.append('{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+            if c[5] == 0x000000:
+                styles.append('{\\3c&HFFFFFF&}')
+        styles.append('{\\alpha&H%02X}' % from_alpha)
+        if isborder == 'false':
+            styles.append('{\\bord0}')
+        if (from_x, from_y) == (to_x, to_y):
+            styles.append('{\\pos(%s, %s)}' % (from_x, from_y))
+        else:
+            styles.append('{\\move(%s, %s, %s, %s, %s, %s)}' % (from_x, from_y, to_x, to_y, delay, delay+duration))
+        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+
+    except ValueError as e:
+        try:
+            logging.warning(_('Invalid comment: %r') % c[3])
+        except IndexError:
+            logging.warning(_('Invalid comment: %r') % c)
+
+
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
@@ -215,21 +261,26 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
     for idx, i in enumerate(comments):
         if progress_callback and idx % 1000 == 0:
             progress_callback(idx, len(comments))
-        row = 0
-        rowmax = height-bottomReserved-i[7]
-        while row < rowmax:
-            freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
-            if freerows >= i[7]:
-                MarkCommentRow(rows, i, row)
-                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
-                break
+        if isinstance(i[4], int):
+            row = 0
+            rowmax = height-bottomReserved-i[7]
+            while row < rowmax:
+                freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
+                if freerows >= i[7]:
+                    MarkCommentRow(rows, i, row)
+                    WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
+                    break
+                else:
+                    row += freerows or 1
             else:
-                row += freerows or 1
+                if not reduced:
+                    row = FindAlternativeRow(rows, i, height, bottomReserved)
+                    MarkCommentRow(rows, i, row)
+                    WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
+        elif i[4] == 'bilipos':
+            WriteCommentBilibiliPositioned(f, i, width, height, styleid)
         else:
-            if not reduced:
-                row = FindAlternativeRow(rows, i, height, bottomReserved)
-                MarkCommentRow(rows, i, row)
-                WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
+            logging.warning(_('Invalid comment: %r') % i[3])
     if progress_callback:
         progress_callback(len(comments), len(comments))
 
@@ -337,6 +388,14 @@ def FilterBadChars(f):
     s = f.read()
     s = re.sub('[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f]', '\ufffd', s)
     return io.StringIO(s)
+
+
+class safe_list(list):
+    def get(self, index, default=None):
+        try:
+            return self[index]
+        except IndexError:
+            return default
 
 
 def export(func):
