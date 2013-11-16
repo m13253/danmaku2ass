@@ -108,6 +108,8 @@ def ReadCommentsNiconico(f, fontsize):
     for comment in comment_element:
         try:
             c = str(comment.childNodes[0].wholeText)
+            if c.startswith('/'):
+                continue  # ignore advanced comments
             pos = 0
             color = 0xffffff
             size = fontsize
