@@ -489,8 +489,7 @@ def ReadComments(input_files, font_size=25.0, progress_callback=None):
             CommentProcessor = GetCommentProcessor(f)
             if not CommentProcessor:
                 raise ValueError(_('Unknown comment file format: %s') % i)
-            for comment in CommentProcessor(FilterBadChars(f), font_size):
-                comments.append(comment)
+            comments.extend(CommentProcessor(FilterBadChars(f), font_size))
     if progress_callback:
         progress_callback(len(input_files), len(input_files))
     comments.sort()
