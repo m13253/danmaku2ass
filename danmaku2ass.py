@@ -213,40 +213,91 @@ CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadC
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
+    BiliPlayerSize = (672, 437)
+    BiliPlayerAspect = 672/437
+    def GetZoomFactor(TargetSize):
+        try:
+            if TargetSize == GetZoomFactor.Cached_TargetSize:
+                return GetZoomFactor.Cached_Result
+        except AttributeError:
+            pass
+        GetZoomFactor.Cached_TargetSize = TargetSize
+        try:
+            TargetAspect = TargetSize[0]/TargetSize[1]
+            if TargetAspect < BiliPlayerAspect:  # narrower
+                ScaleFactor = TargetSize[0]/BiliPlayerSize[0]
+                GetZoomFactor.Cached_Result = (ScaleFactor, 0, (TargetSize[1]-TargetSize[0]/BiliPlayerAspect)/2)
+            elif TargetAspect > BiliPlayerAspect:  # wider
+                ScaleFactor = TargetSize[1]/BiliPlayerSize[1]
+                GetZoomFactor.Cached_Result = (ScaleFactor, (TargetSize[0]-TargetSize[1]*BiliPlayerAspect)/2, 0)
+            else:
+                GetZoomFactor.Cached_Result = (TargetSize[0]/BiliPlayerSize[0], 0, 0)
+            return GetZoomFactor.Cached_Result
+        except ZeroDivisionError:
+            GetZoomFactor.Cached_Result = (1, 0, 0)
+            return GetZoomFactor.Cached_Result
+    ZoomFactor = GetZoomFactor((width, height))
+    def GetPosition(InputPos, isHeight):
+        isHeight = int(isHeight)  # True -> 1
+        if isinstance(InputPos, int):
+            return ZoomFactor[0]*InputPos+ZoomFactor[isHeight+1]
+        elif isinstance(InputPos, float):
+            if InputPos > 1:
+                return ZoomFactor[0]*InputPos+ZoomFactor[isHeight+1]
+            else:
+                return BiliPlayerSize[isHeight]*ZoomFactor[0]*InputPos+ZoomFactor[isHeight+1]
+        else:
+            try:
+                InputPos = int(InputPos)
+            except ValueError:
+                InputPos = float(InputPos)
+            return GetPosition(InputPos, isHeight)
     try:
         comment_args = safe_list(json.loads(c[3]))
         text = str(comment_args[4]).replace('\\', '\\\\').replace('/n', '\\N')
-        from_x = int(comment_args.get(0, 0))
-        from_y = int(comment_args.get(1, 0))
-        to_x = int(comment_args.get(7, from_x))
-        to_y = int(comment_args.get(7, from_y))
-        alpha = safe_list(str(comment_args.get(3, '1')).split('-'))
+        from_x = comment_args.get(0, 0)
+        from_y = comment_args.get(1, 0)
+        to_x = comment_args.get(7, from_x)
+        to_y = comment_args.get(8, from_y)
+        from_x = round(GetPosition(from_x, False))
+        from_y = round(GetPosition(from_y, True))
+        to_x = round(GetPosition(to_x, False))
+        to_y = round(GetPosition(to_y, True))
+        alpha = safe_list(str(comment_args.get(2, '1')).split('-'))
         from_alpha = float(alpha.get(0, 1))
         to_alpha = float(alpha.get(1, from_alpha))
         from_alpha = 255-round(from_alpha*255)
         to_alpha = 255-round(to_alpha*255)
+        rotate_z = -int(comment_args.get(5, 0))
+        rotate_y = int(comment_args.get(6, 0))
         lifetime = float(comment_args.get(3, 4500))
-        duration = float(comment_args.get(9, lifetime*1000))
-        delay = float(comment_args.get(10, 0))
+        duration = int(comment_args.get(9, lifetime*1000))
+        delay = int(comment_args.get(10, 0))
         fontface = comment_args.get(12)
         isborder = comment_args.get(11, 'true')
         styles = []
-        if fontface:
-            styles.append('{\\fn%s}' % fontface)
-        styles.append('{\\fs%s}' % round(c[6]))
-        if c[5] != 0xffffff:
-            styles.append('{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
-            if c[5] == 0x000000:
-                styles.append('{\\3c&HFFFFFF&}')
-        styles.append('{\\alpha&H%02X}' % from_alpha)
-        if isborder == 'false':
-            styles.append('{\\bord0}')
         if (from_x, from_y) == (to_x, to_y):
             styles.append('{\\pos(%s, %s)}' % (from_x, from_y))
         else:
             styles.append('{\\move(%s, %s, %s, %s, %s, %s)}' % (from_x, from_y, to_x, to_y, delay, delay+duration))
+        if rotate_z != 0:
+            styles.append('{\\frz%s}' % rotate_z)
+        if rotate_y != 0:
+            styles.append('{\\fry%s}' % rotate_y)
+        if fontface:
+            styles.append('{\\fn%s}' % fontface)
+        styles.append('{\\fs%s}' % round(c[6]*ZoomFactor[0]))
+        if c[5] != 0xffffff:
+            styles.append('{\\c&H%02X%02X%02x&}' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+            if c[5] == 0x000000:
+                styles.append('{\\3c&HFFFFFF&}')
+        if from_alpha == to_alpha:
+            styles.append('{\\alpha&H%02X}' % from_alpha)
+        else:
+            styles.append('{\\fade(%(from_alpha)s,%(to_alpha)s,%(to_alpha)s,%(start_time)s,%(end_time)s,%(end_time)s,%(end_time)s)}' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'start_time': delay, 'end_time': delay+duration})
+        if isborder == 'false':
+            styles.append('{\\bord0}')
         f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,%(styles)s%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
-
     except ValueError as e:
         try:
             logging.warning(_('Invalid comment: %r') % c[3])
