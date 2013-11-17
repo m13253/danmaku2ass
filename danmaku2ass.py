@@ -217,6 +217,7 @@ CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadC
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
     BiliPlayerSize = (672, 437)
     BiliPlayerAspect = 672/437
+
     def GetZoomFactor(TargetSize):
         try:
             if TargetSize == GetZoomFactor.Cached_TargetSize:
@@ -238,7 +239,9 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         except ZeroDivisionError:
             GetZoomFactor.Cached_Result = (1, 0, 0)
             return GetZoomFactor.Cached_Result
+
     ZoomFactor = GetZoomFactor((width, height))
+
     def GetPosition(InputPos, isHeight):
         isHeight = int(isHeight)  # True -> 1
         if isinstance(InputPos, int):
@@ -254,6 +257,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             except ValueError:
                 InputPos = float(InputPos)
             return GetPosition(InputPos, isHeight)
+
     try:
         comment_args = safe_list(json.loads(c[3]))
         text = str(comment_args[4]).replace('\\', '\\\\').replace('/n', '\\N').replace('{', '\\{').replace('}', '\\}')
