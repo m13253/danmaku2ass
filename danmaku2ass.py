@@ -87,7 +87,8 @@ def ProbeCommentFormat(f):
 #     comment:   The content of the comment
 #     pos:       0 for regular moving comment,
 #                1 for bottom centered comment,
-#                2 for top centered comment
+#                2 for top centered comment,
+#                3 for reversed moving comment
 #     color:     Font color represented in 0xRRGGBB,
 #                e.g. 0xffffff for white
 #     size:      Font size
@@ -156,7 +157,7 @@ def ReadCommentsBilibili(f, fontsize):
             if p[1] != '7':
                 c = str(comment.childNodes[0].wholeText).replace('/n', '\n')
                 size = int(p[2])*fontsize/25.0
-                yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1, '6': 0}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+                yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1, '6': 3}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             else:  # positioned comment
                 c = str(comment.childNodes[0].wholeText)
                 yield (float(p[0]), int(p[4]), i, c, 'bilipos', int(p[3]), int(p[2]), 0, 0)
@@ -314,7 +315,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
-    rows = [[None]*(height-bottomReserved), [None]*(height-bottomReserved), [None]*(height-bottomReserved)]
+    rows = [[None]*(height-bottomReserved) for i in range(4)]
     for idx, i in enumerate(comments):
         if progress_callback and idx % 1000 == 0:
             progress_callback(idx, len(comments))
@@ -403,6 +404,8 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, s
         styles.append('\\an8\\pos(%(halfwidth)s, %(row)s)' % {'halfwidth': round(width/2), 'row': row})
     elif c[4] == 2:
         styles.append('\\an2\\pos(%(halfwidth)s, %(row)s)' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)})
+    elif c[4] == 3:
+        styles.append('\\move(%(neglen)s, %(row)s, %(width)s, %(row)s)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
     else:
         styles.append('\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
     if not (-1 < c[6]-fontsize < 1):
