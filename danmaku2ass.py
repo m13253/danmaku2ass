@@ -275,7 +275,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         from_alpha = 255-round(from_alpha*255)
         to_alpha = 255-round(to_alpha*255)
         rotate_z = -int(comment_args.get(5, 0))
-        rotate_y = int(comment_args.get(6, 0))
+        rotate_y = -int(comment_args.get(6, 0))
         lifetime = float(comment_args.get(3, 4500))
         duration = int(comment_args.get(9, lifetime*1000))
         delay = int(comment_args.get(10, 0))
