@@ -216,8 +216,7 @@ CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadC
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
-    BiliPlayerSize = (672, 437)
-    BiliPlayerAspect = 672/437
+    BiliPlayerSize = (672, 438)
 
     def GetZoomFactor(TargetSize):
         try:
@@ -227,6 +226,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             pass
         GetZoomFactor.Cached_TargetSize = TargetSize
         try:
+            BiliPlayerAspect = BiliPlayerSize[0]/BiliPlayerSize[1]
             TargetAspect = TargetSize[0]/TargetSize[1]
             if TargetAspect < BiliPlayerAspect:  # narrower
                 ScaleFactor = TargetSize[0]/BiliPlayerSize[0]
