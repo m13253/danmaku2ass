@@ -308,7 +308,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         elif (from_alpha, to_alpha) == (0, 255):
             styles.append('\\fad(0, %s)' % (lifetime*1000))
         else:
-            styles.append('\\fade(%(from_alpha)s,%(to_alpha)s,%(to_alpha)s,0,%(end_time)s,%(end_time)s,%(end_time)s)' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'end_time': lifetime*1000})
+            styles.append('\\fade(%(from_alpha)s, %(to_alpha)s, %(to_alpha)s, 0, %(end_time)s, %(end_time)s, %(end_time)s)' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'end_time': lifetime*1000})
         if isborder == 'false':
             styles.append('\\bord0')
         f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
