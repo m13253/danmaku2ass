@@ -533,6 +533,8 @@ def GetCommentProcessor(input_file):
 
 
 def main():
+    if len(sys.argv) == 1:
+        sys.argv.append('--help')
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
