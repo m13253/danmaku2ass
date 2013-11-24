@@ -289,7 +289,10 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_x, from_y, to_x, to_y, delay, delay+duration))
         if rotate_z != 0:
             styles.append('\\frz%s' % rotate_z)
-        if rotate_y != 0:
+            if rotate_y != 0:
+                styles.append('\\frx%s' % (rotate_y*math.sin(rotate_z*math.pi/180)))
+                styles.append('\\fry%s' % (rotate_y*math.cos(rotate_z*math.pi/180)))
+        elif rotate_y != 0:
             styles.append('\\fry%s' % rotate_y)
         if fontface:
             styles.append('\\fn%s' % fontface.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}'))
