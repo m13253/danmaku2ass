@@ -1,101 +1,106 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
-"POT-Creation-Date: 2013-09-30 23:13+0800\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-11-24 15:30+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: danmaku2ass.py:133 danmaku2ass.py:170
+#: danmaku2ass.py:130 danmaku2ass.py:165 danmaku2ass.py:195
 #, python-format
 msgid "Invalid comment: %s"
 msgstr "無効なコメント：%s"
 
-#: danmaku2ass.py:151
+#: danmaku2ass.py:145 danmaku2ass.py:179 danmaku2ass.py:211 danmaku2ass.py:317
+#: danmaku2ass.py:319 danmaku2ass.py:348
 #, python-format
 msgid "Invalid comment: %r"
 msgstr "無効なコメント：%r"
 
-#: danmaku2ass.py:215
-msgid "OUTPUT"
-msgstr "出力"
-
-#: danmaku2ass.py:215
-msgid "Output file"
-msgstr "出力ファイル"
-
-#: danmaku2ass.py:216
-msgid "Stage size in pixels"
-msgstr "ピクセル単位でステージのサイズ"
-
-#: danmaku2ass.py:216
-msgid "WIDTHxHEIGHT"
-msgstr "幅x高"
-
-#: danmaku2ass.py:217
+#: danmaku2ass.py:496 danmaku2ass.py:539
 msgid "(FONT) sans-serif"
 msgstr "(FONT) MS PGothic"
 
-#: danmaku2ass.py:217
-msgid "FONT"
-msgstr "フォント"
-
-#: danmaku2ass.py:217
-msgid "Specify font face"
-msgstr "フォントを指定する"
-
-#: danmaku2ass.py:218
-msgid "Default font size"
-msgstr "デフォルトのフォントサイズ"
-
-#: danmaku2ass.py:218
-msgid "SIZE"
-msgstr "サイズ"
-
-#: danmaku2ass.py:219
-msgid "ALPHA"
-msgstr "アルファ"
-
-#: danmaku2ass.py:219
-msgid "Text opaque"
-msgstr "テキストの不透明度"
-
-#: danmaku2ass.py:220
-msgid "Duration of comment display"
-msgstr "コメント表示の時間"
-
-#: danmaku2ass.py:220
-msgid "SECONDS"
-msgstr "秒数"
-
-#: danmaku2ass.py:221
-msgid "HEIGHT"
-msgstr "高度"
-
-#: danmaku2ass.py:221
-msgid "Reserve blank on the bottom of the stage"
-msgstr "ステージの下にブランクを予備する"
-
-#: danmaku2ass.py:222
-msgid "Reduce the amount of comments if stage is full"
-msgstr "ステージがいっぱいになったのときにコメントの量を減らす"
-
-#: danmaku2ass.py:223
-msgid "Comment file to be processed"
-msgstr "ファイルが処理されるコメント"
-
-#: danmaku2ass.py:223
-msgid "FILE"
-msgstr "ファイル"
-
-#: danmaku2ass.py:230
-#, python-format
-msgid "Invalid stage size: %r"
-msgstr "無効なステージサイズ：%r"
-
-#: danmaku2ass.py:236
+#: danmaku2ass.py:522
 #, python-format
 msgid "Unknown comment file format: %s"
 msgstr "未知のコメントファイル形式：%s"
+
+#: danmaku2ass.py:537
+msgid "OUTPUT"
+msgstr "出力"
+
+#: danmaku2ass.py:537
+msgid "Output file"
+msgstr "出力ファイル"
+
+#: danmaku2ass.py:538
+msgid "Stage size in pixels"
+msgstr "ピクセル単位でステージのサイズ"
+
+#: danmaku2ass.py:538
+msgid "WIDTHxHEIGHT"
+msgstr "幅x高"
+
+#: danmaku2ass.py:539
+msgid "FONT"
+msgstr "フォント"
+
+#: danmaku2ass.py:539
+#, python-format
+msgid "Specify font face [default: %s]"
+msgstr "フォントを指定する [デフォルト: %s]"
+
+#: danmaku2ass.py:540
+#, python-format
+msgid "Default font size [default: %s]"
+msgstr "デフォルトのフォントサイズ [デフォルト: %s]"
+
+#: danmaku2ass.py:540
+msgid "SIZE"
+msgstr "サイズ"
+
+#: danmaku2ass.py:541
+msgid "ALPHA"
+msgstr "アルファ"
+
+#: danmaku2ass.py:541
+msgid "Text opaque"
+msgstr "テキストの不透明度"
+
+#: danmaku2ass.py:542
+#, python-format
+msgid "Duration of comment display [default: %s]"
+msgstr "コメント表示の時間 [デフォルト: %s]"
+
+#: danmaku2ass.py:542
+msgid "SECONDS"
+msgstr "秒数"
+
+#: danmaku2ass.py:543
+msgid "HEIGHT"
+msgstr "高度"
+
+#: danmaku2ass.py:543
+msgid "Reserve blank on the bottom of the stage"
+msgstr "ステージの下にブランクを予備する"
+
+#: danmaku2ass.py:544
+msgid "Reduce the amount of comments if stage is full"
+msgstr "ステージがいっぱいになったのときにコメントの量を減らす"
+
+#: danmaku2ass.py:545
+msgid "Comment file to be processed"
+msgstr "ファイルが処理されるコメント"
+
+#: danmaku2ass.py:545
+msgid "FILE"
+msgstr "ファイル"
+
+#: danmaku2ass.py:552
+#, python-format
+msgid "Invalid stage size: %r"
+msgstr "無効なステージサイズ：%r"

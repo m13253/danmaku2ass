@@ -55,13 +55,13 @@ optional arguments:
   -s WIDTHxHEIGHT, --size WIDTHxHEIGHT
                         Stage size in pixels
   -fn FONT, --font FONT
-                        Specify font face
+                        Specify font face [default: sans-serif]
   -fs SIZE, --fontsize SIZE
-                        Default font size
+                        Default font size [default: 25]
   -a ALPHA, --alpha ALPHA
                         Text opaque
   -l SECONDS, --lifetime SECONDS
-                        Duration of comment display
+                        Duration of comment display [default: 5]
   -p HEIGHT, --protect HEIGHT
                         Reserve blank on the bottom of the stage
   -r, --reduce          Reduce the amount of comments if stage is full
