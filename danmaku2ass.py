@@ -353,29 +353,30 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
 def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
     res = 0
     rowmax = height-bottomReserved-c[7]
+    targetRow = None
     if c[4] in (1, 2):
         while row < rowmax and res < c[7]:
-            targetRow = rows[c[4]][row]
-            if targetRow and targetRow[0]+lifetime > c[0]:
-                break
-            while rows[c[4]][row] == targetRow:
-                row += 1
-                res += 1
+            if targetRow != rows[c[4]][row]:
+                targetRow = rows[c[4]][row]
+                if targetRow and targetRow[0]+lifetime > c[0]:
+                    break
+            row += 1
+            res += 1
     else:
         try:
             thresholdTime = c[0]-lifetime*(1-width/(c[8]+width))
         except ZeroDivisionError:
             thresholdTime = c[0]-lifetime
         while row < rowmax and res < c[7]:
-            targetRow = rows[c[4]][row]
-            try:
-                if targetRow and (targetRow[0] > thresholdTime or targetRow[0]+targetRow[8]*lifetime/(targetRow[8]+width) > c[0]):
-                    break
-            except ZeroDivisionError:
-                pass
-            while rows[c[4]][row] == targetRow:
-                row += 1
-                res += 1
+            if targetRow != rows[c[4]][row]:
+                targetRow = rows[c[4]][row]
+                try:
+                    if targetRow and (targetRow[0] > thresholdTime or targetRow[0]+targetRow[8]*lifetime/(targetRow[8]+width) > c[0]):
+                        break
+                except ZeroDivisionError:
+                    pass
+            row += 1
+            res += 1
     return res
 
 
