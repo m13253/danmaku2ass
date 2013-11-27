@@ -355,10 +355,12 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
     rowmax = height-bottomReserved-c[7]
     if c[4] in (1, 2):
         while row < rowmax and res < c[7]:
-            if rows[c[4]][row] and rows[c[4]][row][0]+lifetime > c[0]:
+            targetRow = rows[c[4]][row]
+            if targetRow and targetRow[0]+lifetime > c[0]:
                 break
-            row += 1
-            res += 1
+            while rows[c[4]][row] == targetRow:
+                row += 1
+                res += 1
     else:
         try:
             thresholdTime = c[0]-lifetime*(1-width/(c[8]+width))
@@ -371,8 +373,9 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
                     break
             except ZeroDivisionError:
                 pass
-            row += 1
-            res += 1
+            while rows[c[4]][row] == targetRow:
+                row += 1
+                res += 1
     return res
 
 
