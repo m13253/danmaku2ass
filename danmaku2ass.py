@@ -498,6 +498,7 @@ def export(func):
 
 @export
 def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opaque=1.0, comment_duration=5.0, is_reduce_comments=False, progress_callback=None):
+    fo = None
     comments = ReadComments(input_files, font_size)
     try:
         if output_file:
@@ -506,7 +507,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
             fo = sys.stdout
         ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opaque, comment_duration, is_reduce_comments, progress_callback)
     finally:
-        if output_file:
+        if output_file and fo:
             fo.close()
 
 
