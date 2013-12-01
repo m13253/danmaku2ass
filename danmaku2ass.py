@@ -2,7 +2,6 @@
 
 import argparse
 import calendar
-import colorsys
 import gettext
 import io
 import json
@@ -459,11 +458,6 @@ def ConvertTimestamp(timestamp):
 
 def ConvertType2(row, height, bottomReserved):
     return height-bottomReserved-row
-
-
-def NeedWhiteBorder(rgb):
-    h, l, s = colorsys.rgb_to_hls(((rgb >> 16) & 0xff)/255.0, ((rgb >> 8) & 0xff)/255.0, (rgb & 0xff)/255.0)
-    return (1/12 < h < 7/12 and l < 1/3) or l < 5/12
 
 
 def ConvertToFile(filename_or_file, *args, **kwargs):
