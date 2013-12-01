@@ -322,14 +322,14 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
-    rows = [[None]*(height-bottomReserved) for i in range(4)]
+    rows = [[None]*(height-bottomReserved+1) for i in range(4)]
     for idx, i in enumerate(comments):
         if progress_callback and idx % 1000 == 0:
             progress_callback(idx, len(comments))
         if isinstance(i[4], int):
             row = 0
             rowmax = height-bottomReserved-i[7]
-            while row < rowmax:
+            while row <= rowmax:
                 freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
                 if freerows >= i[7]:
                     MarkCommentRow(rows, i, row)
@@ -355,7 +355,7 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
     rowmax = height-bottomReserved-c[7]
     targetRow = None
     if c[4] in (1, 2):
-        while row < rowmax and res < c[7]:
+        while row <= rowmax and res < c[7]:
             if targetRow != rows[c[4]][row]:
                 targetRow = rows[c[4]][row]
                 if targetRow and targetRow[0]+lifetime > c[0]:
@@ -367,7 +367,7 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
             thresholdTime = c[0]-lifetime*(1-width/(c[8]+width))
         except ZeroDivisionError:
             thresholdTime = c[0]-lifetime
-        while row < rowmax and res < c[7]:
+        while row <= rowmax and res < c[7]:
             if targetRow != rows[c[4]][row]:
                 targetRow = rows[c[4]][row]
                 try:
