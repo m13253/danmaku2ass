@@ -74,7 +74,7 @@ FAQ
 
 Most ASS renderers render ASS subtitles at the same resolution as the video. This is probably because the video is at low resolution or framerate.
 
-If you use MPlayer, you can add options similar to `-vf fps=30,scale=1920:1080,ass` (change the values as you wish).`
+If you use MPlayer, you can add options similar to `-vf fps=30,scale=1920:1080` (change the values as you wish).`
 
 ### I would like to render the danmakus into the video.
 
