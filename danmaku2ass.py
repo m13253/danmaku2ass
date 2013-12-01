@@ -311,7 +311,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             styles.append('\\fade(%(from_alpha)s, %(to_alpha)s, %(to_alpha)s, 0, %(end_time)s, %(end_time)s, %(end_time)s)' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'end_time': lifetime*1000})
         if isborder == 'false':
             styles.append('\\bord0')
-        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
     except ValueError as e:
         try:
             logging.warning(_('Invalid comment: %r') % c[3])
