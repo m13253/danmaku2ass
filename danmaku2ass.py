@@ -136,10 +136,14 @@ def ReadCommentsAcfun(f, fontsize):
         try:
             p = str(comment['c']).split(',')
             assert len(p) >= 6
-            assert p[2] in ('1', '2', '4', '5')
+            assert p[2] in ('1', '2', '4', '5', '7')
             c = str(comment['m'])
             size = int(p[3])*fontsize/25.0
-            yield (float(p[0]), int(p[5]), i, c, {'1': 0, '2': 0, '4': 2, '5': 1}[p[2]], int(p[1]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            if p[2] != '7':
+                yield (float(p[0]), int(p[5]), i, c, {'1': 0, '2': 0, '4': 2, '5': 1}[p[2]], int(p[1]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            else:
+                c = dict(json.loads(c))
+                yield (float(p[0]), int(p[5]), i, c, 'acfunpos', int(p[1]), size, 0, 0)
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
             continue
@@ -270,7 +274,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         elif rotate_y != 0:
             styles.append('\\fry%s' % rotate_y)
         if fontface:
-            styles.append('\\fn%s' % fontface.replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}'))
+            styles.append('\\fn%s' % ASSEscape(fontface))
         styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
         if c[5] != 0xffffff:
             styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
@@ -287,11 +291,92 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         if isborder == 'false':
             styles.append('\\bord0')
         f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
-    except ValueError as e:
+    except (IndexError, ValueError) as e:
         try:
             logging.warning(_('Invalid comment: %r') % c[3])
         except IndexError:
             logging.warning(_('Invalid comment: %r') % c)
+
+
+def WriteCommentAcfunPositioned(f, c, width, height, styleid):
+    AcfunPlayerSize = (650, 445)
+    ZoomFactor = GetZoomFactor(AcfunPlayerSize, (width, height))
+
+    def GetPosition(InputPos, isHeight):
+        isHeight = int(isHeight)  # True -> 1
+        return AcfunPlayerSize[isHeight]*ZoomFactor[0]*InputPos*0.001+ZoomFactor[isHeight+1]
+
+    try:
+        comment_args = c[3]
+        text = str(comment_args['n'])
+        styles = []
+        anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
+        if anchor != 7:
+            styles.append('\\an%s' % anchor)
+        from_pos = dict(comment_args.get('p', {'x': 0, 'y': 0}))
+        from_x = round(GetPosition(int(from_pos.get('x', 0)), False))
+        from_y = round(GetPosition(int(from_pos.get('y', 0)), True))
+        styles.append('\\pos(%s, %s)' % (from_x, from_y))
+        styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
+        scale_x = round(float(comment_args.get('e', 1.0))*100)
+        if scale_x != 100:
+            styles.append('\\fscx%s' % scale_x)
+        scale_y = round(float(comment_args.get('f', 1.0))*100)
+        if scale_y != 100:
+            styles.append('\\fscy%s' % scale_y)
+        rotate_z = -float(comment_args.get('r', 0.0))
+        rotate_y = -float(comment_args.get('k', 0.0))
+        if not (-1 < rotate_z < 1):
+            styles.append('\\frz%s' % round(rotate_z))
+            if not (-1 < rotate_y < 1):
+                styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180)))
+                styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180)))
+        elif not (-1 < rotate_y < 1):
+            styles.append('\\fry%s' % round(rotate_y))
+        font = comment_args.get('w')
+        if font:
+            font = dict(font)
+            fontface = font.get('f')
+            if fontface:
+                styles.append('\\fn%s' % ASSEscape(str(fontface)))
+            fontbold = bool(font.get('b'))
+            if fontbold:
+                styles.append('\\b1')
+        if c[5] != 0xffffff:
+            styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+            if c[5] == 0x000000:
+                styles.append('\\3c&HFFFFFF&')
+        from_alpha = 255-round(float(comment_args.get('a', 1.0))*255)
+        styles.append('\\alpha&H%02X' % from_alpha)
+        isborder = bool(comment_args.get('b', True))
+        if not isborder:
+            styles.append('\\bord0')
+        appear_time = float(comment_args.get('t', 0.0))
+        action_time = float(comment_args.get('l', 3.0))
+        actions = list(comment_args.get('z', []))
+        to_x, to_y = from_x, from_y
+        for action in actions:
+            action = dict(action)
+            duration = float(action.get('l', 0.0))
+            if duration <= 0.0:
+                continue
+            action_styles = []
+            if 'x' in action:
+                to_x = round(GetPosition(int(action['x']), False))
+            if 'y' in action:
+                to_y = round(GetPosition(int(action['y']), True))
+            if ('x' in action) or ('y' in action):
+                action_styles.append('\\pos(%s, %s)' % (to_x, to_y))
+            if 'f' in action:
+                action_styles.append('\\fscx%s' % round(float(action['f'])*100))
+            if 'g' in action:
+                action_styles.append('\\fscy%s' % round(float(action['g'])*100))
+            if action_styles:
+                styles.append('\\t(%s, %s, %s)' % (round(action_time*1000), round((action_time+duration)*1000), ''.join(action_styles)))
+            action_time += duration
+        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]+appear_time), 'end': ConvertTimestamp(c[0]+appear_time+action_time), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+    except (IndexError, ValueError) as e:
+        logging.warning(_('Invalid comment: %r') % c[3])
 
 
 # Result: (f, dx, dy)
@@ -345,6 +430,8 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
                     WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
         elif i[4] == 'bilipos':
             WriteCommentBilibiliPositioned(f, i, width, height, styleid)
+        elif i[4] == 'acfunpos':
+            WriteCommentAcfunPositioned(f, i, width, height, styleid)
         else:
             logging.warning(_('Invalid comment: %r') % i[3])
     if progress_callback:
