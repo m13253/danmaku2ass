@@ -216,31 +216,7 @@ CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadC
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
     BiliPlayerSize = (672, 438)
-
-    def GetZoomFactor(TargetSize):
-        try:
-            if TargetSize == GetZoomFactor.Cached_TargetSize:
-                return GetZoomFactor.Cached_Result
-        except AttributeError:
-            pass
-        GetZoomFactor.Cached_TargetSize = TargetSize
-        try:
-            BiliPlayerAspect = BiliPlayerSize[0]/BiliPlayerSize[1]
-            TargetAspect = TargetSize[0]/TargetSize[1]
-            if TargetAspect < BiliPlayerAspect:  # narrower
-                ScaleFactor = TargetSize[0]/BiliPlayerSize[0]
-                GetZoomFactor.Cached_Result = (ScaleFactor, 0, (TargetSize[1]-TargetSize[0]/BiliPlayerAspect)/2)
-            elif TargetAspect > BiliPlayerAspect:  # wider
-                ScaleFactor = TargetSize[1]/BiliPlayerSize[1]
-                GetZoomFactor.Cached_Result = (ScaleFactor, (TargetSize[0]-TargetSize[1]*BiliPlayerAspect)/2, 0)
-            else:
-                GetZoomFactor.Cached_Result = (TargetSize[0]/BiliPlayerSize[0], 0, 0)
-            return GetZoomFactor.Cached_Result
-        except ZeroDivisionError:
-            GetZoomFactor.Cached_Result = (1, 0, 0)
-            return GetZoomFactor.Cached_Result
-
-    ZoomFactor = GetZoomFactor((width, height))
+    ZoomFactor = GetZoomFactor(BiliPlayerSize, (width, height))
 
     def GetPosition(InputPos, isHeight):
         isHeight = int(isHeight)  # True -> 1
@@ -316,6 +292,32 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             logging.warning(_('Invalid comment: %r') % c[3])
         except IndexError:
             logging.warning(_('Invalid comment: %r') % c)
+
+
+# Result: (f, dx, dy)
+# To convert: NewX = f*x+dx, NewY = f*y+dy
+def GetZoomFactor(SourceSize, TargetSize):
+    try:
+        if (SourceSize, TargetSize) == GetZoomFactor.Cached_Size:
+            return GetZoomFactor.Cached_Result
+    except AttributeError:
+        pass
+    GetZoomFactor.Cached_Size = (SourceSize, TargetSize)
+    try:
+        SourceAspect = SourceSize[0]/SourceSize[1]
+        TargetAspect = TargetSize[0]/TargetSize[1]
+        if TargetAspect < SourceAspect:  # narrower
+            ScaleFactor = TargetSize[0]/SourceSize[0]
+            GetZoomFactor.Cached_Result = (ScaleFactor, 0, (TargetSize[1]-TargetSize[0]/SourceAspect)/2)
+        elif TargetAspect > SourceAspect:  # wider
+            ScaleFactor = TargetSize[1]/SourceSize[1]
+            GetZoomFactor.Cached_Result = (ScaleFactor, (TargetSize[0]-TargetSize[1]*SourceAspect)/2, 0)
+        else:
+            GetZoomFactor.Cached_Result = (TargetSize[0]/SourceSize[0], 0, 0)
+        return GetZoomFactor.Cached_Result
+    except ZeroDivisionError:
+        GetZoomFactor.Cached_Result = (1, 0, 0)
+        return GetZoomFactor.Cached_Result
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
