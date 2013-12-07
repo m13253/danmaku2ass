@@ -137,12 +137,12 @@ def ReadCommentsAcfun(f, fontsize):
             p = str(comment['c']).split(',')
             assert len(p) >= 6
             assert p[2] in ('1', '2', '4', '5', '7')
-            c = str(comment['m'])
             size = int(p[3])*fontsize/25.0
             if p[2] != '7':
+                c = str(comment['m']).replace('\\r', '\n').replace('\r', '\n')
                 yield (float(p[0]), int(p[5]), i, c, {'1': 0, '2': 0, '4': 2, '5': 1}[p[2]], int(p[1]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
             else:
-                c = dict(json.loads(c))
+                c = dict(json.loads(comment['m']))
                 yield (float(p[0]), int(p[5]), i, c, 'acfunpos', int(p[1]), size, 0, 0)
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
@@ -308,7 +308,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
 
     try:
         comment_args = c[3]
-        text = str(comment_args['n'])
+        text = ASSEscape(str(comment_args['n']).replace('\\r', '\n').replace('\r', '\n'))
         styles = []
         anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
         if anchor != 7:
@@ -355,6 +355,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         action_time = float(comment_args.get('l', 3.0))
         actions = list(comment_args.get('z', []))
         to_x, to_y = from_x, from_y
+        to_rotate_z, to_rotate_y = rotate_z, rotate_y
         for action in actions:
             action = dict(action)
             duration = float(action.get('l', 0.0))
@@ -371,6 +372,23 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
                 action_styles.append('\\fscx%s' % round(float(action['f'])*100))
             if 'g' in action:
                 action_styles.append('\\fscy%s' % round(float(action['g'])*100))
+            if 'c' in action:
+                to_color = int(action['c'])
+                action_styles.append('\\c&H%02X%02X%02x&' % (to_color & 0xff, (to_color >> 8) & 0xff, (to_color >> 16) & 0xff))
+            if 't' in action:
+                to_alpha = 255-round(float(action['t'])*255)
+                action_styles.append('\\alpha&H%02X' % to_alpha)
+            if 'd' in action:
+                to_rotate_z = -float(action['d'])
+            if 'e' in action:
+                to_rotate_y = -float(action['e'])
+            if ('d' in action) or ('e' in action):
+                action_styles.append('\\frz%s' % round(to_rotate_z))
+                if not (-1 < to_rotate_z < 1):
+                    action_styles.append('\\frx%s' % round(to_rotate_y*math.sin(to_rotate_z*math.pi/180)))
+                    action_styles.append('\\fry%s' % round(to_rotate_y*math.cos(to_rotate_z*math.pi/180)))
+                else:
+                    action_styles.append('\\fry%s' % round(to_rotate_y))
             if action_styles:
                 styles.append('\\t(%s, %s, %s)' % (round(action_time*1000), round((action_time+duration)*1000), ''.join(action_styles)))
             action_time += duration
