@@ -46,6 +46,9 @@ def ProbeCommentFormat(f):
     tmp = f.read(1)
     if tmp == '[':
         return 'Acfun'
+        # It is unwise to wrap a JSON object in an array!
+        # See this: http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx/
+        # Do never follow what Acfun developers did!
     elif tmp == '{':
         tmp = f.read(14)
         if tmp == '"status_code":':
@@ -277,7 +280,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             styles.append('\\fn%s' % ASSEscape(fontface))
         styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
         if c[5] != 0xffffff:
-            styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+            styles.append('\\c&H%02X%02X%02X&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
             if c[5] == 0x000000:
                 styles.append('\\3c&HFFFFFF&')
         if from_alpha == to_alpha:
@@ -299,85 +302,100 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
 
 
 def WriteCommentAcfunPositioned(f, c, width, height, styleid):
-    AcfunPlayerSize = (650, 445)
+    AcfunPlayerSize = (560, 400)
     ZoomFactor = GetZoomFactor(AcfunPlayerSize, (width, height))
 
     def GetPosition(InputPos, isHeight):
         isHeight = int(isHeight)  # True -> 1
         return AcfunPlayerSize[isHeight]*ZoomFactor[0]*InputPos*0.001+ZoomFactor[isHeight+1]
 
-    try:
-        comment_args = c[3]
-        text = ASSEscape(str(comment_args['n']).replace('\\r', '\n').replace('\r', '\n'))
+    def GetTransformStyles(x=None, y=None, scale_x=None, scale_y=None, rotate_z=None, rotate_y=None, color=None, alpha=None):
         styles = []
-        anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
-        if anchor != 7:
-            styles.append('\\an%s' % anchor)
-        from_pos = dict(comment_args.get('p', {'x': 0, 'y': 0}))
-        from_x = round(GetPosition(int(from_pos.get('x', 0)), False))
-        from_y = round(GetPosition(int(from_pos.get('y', 0)), True))
-        styles.append('\\pos(%s, %s)' % (from_x, from_y))
-        styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
-        scale_x = round(float(comment_args.get('e', 1.0))*100)
-        if scale_x != 100:
+        if x is not None and y is not None:
+            styles.append('\\pos(%s, %s)' % (x, y))
+        if scale_x is not None:
             styles.append('\\fscx%s' % scale_x)
-        scale_y = round(float(comment_args.get('f', 1.0))*100)
-        if scale_y != 100:
+        if scale_y is not None:
             styles.append('\\fscy%s' % scale_y)
-        rotate_z = -float(comment_args.get('r', 0.0))
-        rotate_y = -float(comment_args.get('k', 0.0))
-        if not (-1 < rotate_z < 1):
+        if rotate_y is not None and rotate_z is not None:
             styles.append('\\frz%s' % round(rotate_z))
-            if not (-1 < rotate_y < 1):
+            if not (-1 < rotate_z < 1):
                 styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180)))
                 styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180)))
-        elif not (-1 < rotate_y < 1):
-            styles.append('\\fry%s' % round(rotate_y))
+            else:
+                styles.append('\\fry%s' % round(rotate_y))
+        if color is not None:
+            styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
+            if color == 0x000000:
+                styles.append('\\3c&HFFFFFF&')
+        if alpha is not None:
+            alpha = 255-round(alpha*255)
+            styles.append('\\alpha&H%02X' % alpha)
+        return styles
+
+    def FlushCommentLine(f, text, styles, start_time, end_time, styleid):
+        if end_time > start_time:
+            f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(start_time), 'end': ConvertTimestamp(end_time), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+
+    try:
+        comment_args = c[3]
+        text = ASSEscape(str(comment_args['n']).replace('\r', '\n').replace('\r', '\n'))
+        common_styles = []
+        anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
+        if anchor != 7:
+            common_styles.append('\\an%s' % anchor)
         font = comment_args.get('w')
         if font:
             font = dict(font)
             fontface = font.get('f')
             if fontface:
-                styles.append('\\fn%s' % ASSEscape(str(fontface)))
+                common_styles.append('\\fn%s' % ASSEscape(str(fontface)))
             fontbold = bool(font.get('b'))
             if fontbold:
-                styles.append('\\b1')
-        if c[5] != 0xffffff:
-            styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
-            if c[5] == 0x000000:
-                styles.append('\\3c&HFFFFFF&')
-        from_alpha = 255-round(float(comment_args.get('a', 1.0))*255)
-        styles.append('\\alpha&H%02X' % from_alpha)
+                common_styles.append('\\b1')
+        common_styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
         isborder = bool(comment_args.get('b', True))
         if not isborder:
-            styles.append('\\bord0')
-        appear_time = float(comment_args.get('t', 0.0))
+            common_styles.append('\\bord0')
+        to_pos = dict(comment_args.get('p', {'x': 0, 'y': 0}))
+        to_x = round(GetPosition(int(to_pos.get('x', 0)), False))
+        to_y = round(GetPosition(int(to_pos.get('y', 0)), True))
+        to_scale_x = round(float(comment_args.get('e', 1.0))*100)
+        to_scale_y = round(float(comment_args.get('f', 1.0))*100)
+        to_rotate_z = -float(comment_args.get('r', 0.0))
+        to_rotate_y = -float(comment_args.get('k', 0.0))
+        to_color = c[5]
+        to_alpha = float(comment_args.get('a', 1.0))
+        from_time = float(comment_args.get('t', 0.0))
         action_time = float(comment_args.get('l', 3.0))
         actions = list(comment_args.get('z', []))
-        to_x, to_y = from_x, from_y
-        to_rotate_z, to_rotate_y = rotate_z, rotate_y
+        transform_styles = GetTransformStyles(to_x, to_y, to_scale_x, to_scale_y, to_rotate_z, to_rotate_y, to_color, to_alpha)
+        FlushCommentLine(f, text, common_styles+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
         for action in actions:
             action = dict(action)
-            duration = float(action.get('l', 0.0))
-            if duration <= 0.0:
-                continue
+            from_x, from_y = to_x, to_y
+            from_scale_x, from_scale_y = to_scale_x, to_scale_y
+            from_rotate_z, from_rotate_y = to_rotate_z, to_rotate_y
+            from_color, from_alpha = to_color, to_alpha
+            from_time += action_time
+            action_time = float(action.get('l', 0.0))
             action_styles = []
             if 'x' in action:
                 to_x = round(GetPosition(int(action['x']), False))
             if 'y' in action:
                 to_y = round(GetPosition(int(action['y']), True))
-            if ('x' in action) or ('y' in action):
-                action_styles.append('\\pos(%s, %s)' % (to_x, to_y))
             if 'f' in action:
-                action_styles.append('\\fscx%s' % round(float(action['f'])*100))
+                to_scale_x = round(float(action['f'])*100)
+                action_styles.append('\\fscx%s' % to_scale_x)
             if 'g' in action:
-                action_styles.append('\\fscy%s' % round(float(action['g'])*100))
+                to_scale_y = round(float(action['g'])*100)
+                action_styles.append('\\fscy%s' % to_scale_y)
             if 'c' in action:
                 to_color = int(action['c'])
-                action_styles.append('\\c&H%02X%02X%02x&' % (to_color & 0xff, (to_color >> 8) & 0xff, (to_color >> 16) & 0xff))
+                action_styles.append('\\c&H%02X%02X%02X&' % (to_color & 0xff, (to_color >> 8) & 0xff, (to_color >> 16) & 0xff))
             if 't' in action:
-                to_alpha = 255-round(float(action['t'])*255)
-                action_styles.append('\\alpha&H%02X' % to_alpha)
+                to_alpha = float(action['t'])
+                action_styles.append('\\alpha&H%02X' % (255-round(to_alpha*255)))
             if 'd' in action:
                 to_rotate_z = -float(action['d'])
             if 'e' in action:
@@ -389,10 +407,14 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
                     action_styles.append('\\fry%s' % round(to_rotate_y*math.cos(to_rotate_z*math.pi/180)))
                 else:
                     action_styles.append('\\fry%s' % round(to_rotate_y))
+            if ('x' in action) or ('y' in action):
+                transform_styles = GetTransformStyles(None, None, from_scale_x, from_scale_y, from_rotate_z, from_rotate_y, from_color, from_alpha)
+                transform_styles.append('\\move(%s, %s, %s, %s)' % (from_x, from_y, to_x, to_y))
+            else:
+                transform_styles = GetTransformStyles(from_x, from_y, from_scale_x, from_scale_y, from_rotate_z, from_rotate_y, from_color, from_alpha)
             if action_styles:
-                styles.append('\\t(%s, %s, %s)' % (round(action_time*1000), round((action_time+duration)*1000), ''.join(action_styles)))
-            action_time += duration
-        f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]+appear_time), 'end': ConvertTimestamp(c[0]+appear_time+action_time), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+                transform_styles.append('\\t(%s)' % (''.join(action_styles)))
+            FlushCommentLine(f, text, common_styles+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
     except (IndexError, ValueError) as e:
         logging.warning(_('Invalid comment: %r') % c[3])
 
@@ -541,7 +563,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, s
     if not (-1 < c[6]-fontsize < 1):
         styles.append('\\fs%s' % round(c[6]))
     if c[5] != 0xffffff:
-        styles.append('\\c&H%02X%02X%02x&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+        styles.append('\\c&H%02X%02X%02X&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
         if c[5] == 0x000000:
             styles.append('\\3c&HFFFFFF&')
     f.write('Dialogue: 2,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
