@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 
 # The original author of this program, Danmaku2ASS, is StarBrilliant.
 # This file is released under General Public License version 3.
@@ -22,8 +23,8 @@ import time
 import xml.dom.minidom
 
 
-if sys.version_info < (3,):
-    raise RuntimeError('at least Python 3.0 is required')
+if not ((2, 7) <= sys.version_info < (3,)):
+    raise RuntimeError(u'this version of Danmaku2ASS only works on Python 2.7, please switch to the original version of Danmaku2ASS')
 
 gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0] or 'locale'))), 'locale'))
 
