@@ -632,7 +632,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
     comments = ReadComments(input_files, font_size)
     try:
         if output_file:
-            fo = ConvertToFile(output_file, 'w', encoding='utf-8-sig', newline='\r\n')
+            fo = ConvertToFile(output_file, 'w', encoding='utf-8-sig', errors='replace', newline='\r\n')
         else:
             fo = sys.stdout
         ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opaque, comment_duration, is_reduce_comments, progress_callback)
@@ -651,7 +651,7 @@ def ReadComments(input_files, font_size=25.0, progress_callback=None):
     for idx, i in enumerate(input_files):
         if progress_callback:
             progress_callback(idx, len(input_files))
-        with ConvertToFile(i, 'r', encoding='utf-8') as f:
+        with ConvertToFile(i, 'r', encoding='utf-8', errors='replace') as f:
             CommentProcessor = GetCommentProcessor(f)
             if not CommentProcessor:
                 raise ValueError(_('Unknown comment file format: %s') % i)
