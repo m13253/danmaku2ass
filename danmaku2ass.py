@@ -279,8 +279,8 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         if rotate_z != 0:
             styles.append('\\frz%s' % rotate_z)
             if rotate_y != 0:
-                styles.append('\\frx%s' % (rotate_y*math.sin(rotate_z*math.pi/180)))
-                styles.append('\\fry%s' % (rotate_y*math.cos(rotate_z*math.pi/180)))
+                styles.append('\\frx%s' % (rotate_y*math.sin(rotate_z*math.pi/180.0)))
+                styles.append('\\fry%s' % (rotate_y*math.cos(rotate_z*math.pi/180.0)))
         elif rotate_y != 0:
             styles.append('\\fry%s' % rotate_y)
         if fontface:
@@ -327,8 +327,8 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         if rotate_y is not None and rotate_z is not None:
             styles.append('\\frz%s' % round(rotate_z))
             if not (-1 < rotate_z < 1):
-                styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180)))
-                styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180)))
+                styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180.0)))
+                styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180.0)))
             else:
                 styles.append('\\fry%s' % round(rotate_y))
         if color is not None:
@@ -410,8 +410,8 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             if ('d' in action) or ('e' in action):
                 action_styles.append('\\frz%s' % round(to_rotate_z))
                 if not (-1 < to_rotate_z < 1):
-                    action_styles.append('\\frx%s' % round(to_rotate_y*math.sin(to_rotate_z*math.pi/180)))
-                    action_styles.append('\\fry%s' % round(to_rotate_y*math.cos(to_rotate_z*math.pi/180)))
+                    action_styles.append('\\frx%s' % round(to_rotate_y*math.sin(to_rotate_z*math.pi/180.0)))
+                    action_styles.append('\\fry%s' % round(to_rotate_y*math.cos(to_rotate_z*math.pi/180.0)))
                 else:
                     action_styles.append('\\fry%s' % round(to_rotate_y))
             if ('x' in action) or ('y' in action):
