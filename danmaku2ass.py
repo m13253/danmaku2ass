@@ -8,6 +8,8 @@
 # This program comes with no warranty, the author will not be resopnsible for
 # any damage or problems caused by this program.
 
+from __future__ import with_statement
+from __future__ import division
 import argparse
 import calendar
 import gettext
@@ -21,6 +23,8 @@ import re
 import sys
 import time
 import xml.dom.minidom
+from itertools import imap
+from io import open
 
 
 if not ((2, 7) <= sys.version_info < (3,)):
@@ -302,7 +306,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         if isborder == 'false':
             styles.append('\\bord0')
         f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
-    except (IndexError, ValueError) as e:
+    except (IndexError, ValueError), e:
         try:
             logging.warning(_('Invalid comment: %r') % c[3])
         except IndexError:
@@ -423,7 +427,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             if action_styles:
                 transform_styles.append('\\t(%s)' % (''.join(action_styles)))
             FlushCommentLine(f, text, common_styles+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
-    except (IndexError, ValueError) as e:
+    except (IndexError, ValueError), e:
         logging.warning(_('Invalid comment: %r') % c[3])
 
 
@@ -456,7 +460,7 @@ def GetZoomFactor(SourceSize, TargetSize):
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
-    rows = [[None]*(height-bottomReserved+1) for i in range(4)]
+    rows = [[None]*(height-bottomReserved+1) for i in xrange(4)]
     for idx, i in enumerate(comments):
         if progress_callback and idx % 1000 == 0:
             progress_callback(idx, len(comments))
@@ -518,7 +522,7 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
 
 def FindAlternativeRow(rows, c, height, bottomReserved):
     res = 0
-    for row in range(height-bottomReserved-math.ceil(c[7])):
+    for row in xrange(height-bottomReserved-math.ceil(c[7])):
         if not rows[c[4]][row]:
             return row
         elif rows[c[4]][row][0] < rows[c[4]][res][0]:
@@ -528,7 +532,7 @@ def FindAlternativeRow(rows, c, height, bottomReserved):
 
 def MarkCommentRow(rows, c, row):
     try:
-        for i in range(row, row+math.ceil(c[7])):
+        for i in xrange(row, row+math.ceil(c[7])):
             rows[c[4]][i] = c
     except IndexError:
         pass
@@ -582,7 +586,7 @@ def ASSEscape(s):
 
 
 def CalculateLength(s):
-    return max(map(len, s.split('\n')))  # May not be accurate
+    return max(imap(len, s.split('\n')))  # May not be accurate
 
 
 def ConvertTimestamp(timestamp):
