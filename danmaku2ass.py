@@ -8,6 +8,7 @@
 # This program comes with no warranty, the author will not be resopnsible for
 # any damage or problems caused by this program.
 
+from __future__ import unicode_literals
 from __future__ import with_statement
 from __future__ import division
 import argparse
@@ -29,6 +30,8 @@ from io import open
 
 if not ((2, 7) <= sys.version_info < (3,)):
     raise RuntimeError(u'this version of Danmaku2ASS only works on Python 2.7, please switch to the original version of Danmaku2ASS')
+
+bytes, str = str, unicode
 
 gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0] or 'locale'))), 'locale'))
 
@@ -118,7 +121,7 @@ def ProbeCommentFormat(f):
 
 def ReadCommentsNiconico(f, fontsize):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffcc00, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000, 'niconicowhite': 0xcccc99, 'white2': 0xcccc99, 'truered': 0xcc0033, 'red2': 0xcc0033, 'passionorange': 0xff6600, 'orange2': 0xff6600, 'madyellow': 0x999900, 'yellow2': 0x999900, 'elementalgreen': 0x00cc66, 'green2': 0x00cc66, 'marineblue': 0x33ffcc, 'blue2': 0x33ffcc, 'nobleviolet': 0x6633cc, 'purple2': 0x6633cc}
-    dom = xml.dom.minidom.parse(f)
+    dom = xml.dom.minidom.parseString(f.read().encode('utf-8', 'replace'))
     comment_element = dom.getElementsByTagName('chat')
     for comment in comment_element:
         try:
@@ -165,7 +168,7 @@ def ReadCommentsAcfun(f, fontsize):
 
 
 def ReadCommentsBilibili(f, fontsize):
-    dom = xml.dom.minidom.parse(f)
+    dom = xml.dom.minidom.parseString(f.read().encode('utf-8', 'replace'))
     comment_element = dom.getElementsByTagName('d')
     for i, comment in enumerate(comment_element):
         try:
@@ -200,7 +203,7 @@ def ReadCommentsTudou(f, fontsize):
 
 def ReadCommentsMioMio(f, fontsize):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
-    dom = xml.dom.minidom.parse(f)
+    dom = xml.dom.minidom.parseString(f.read().encode('utf-8', 'replace'))
     comment_element = dom.getElementsByTagName('data')
     for i, comment in enumerate(comment_element):
         try:
@@ -532,7 +535,7 @@ def FindAlternativeRow(rows, c, height, bottomReserved):
 
 def MarkCommentRow(rows, c, row):
     try:
-        for i in xrange(row, row+math.ceil(c[7])):
+        for i in xrange(row, row+int(math.ceil(c[7]))):
             rows[c[4]][i] = c
     except IndexError:
         pass
@@ -602,7 +605,7 @@ def ConvertType2(row, height, bottomReserved):
 
 
 def ConvertToFile(filename_or_file, *args, **kwargs):
-    if isinstance(filename_or_file, str):
+    if isinstance(filename_or_file, (str, bytes)):
         return open(filename_or_file, *args, **kwargs)
     else:
         return filename_or_file
@@ -648,7 +651,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
 
 @export
 def ReadComments(input_files, font_size=25.0, progress_callback=None):
-    if isinstance(input_files, str):
+    if isinstance(input_files, (str, bytes)):
         input_files = [input_files]
     else:
         input_files = list(input_files)
@@ -676,18 +679,18 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
-    parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
-    parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
-    parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face [default: %s]') % _('(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
-    parser.add_argument('-fs', '--fontsize', metavar=_('SIZE'), help=(_('Default font size [default: %s]') % 25), type=float, default=25.0)
-    parser.add_argument('-a', '--alpha', metavar=_('ALPHA'), help=_('Text opaque'), type=float, default=1.0)
-    parser.add_argument('-l', '--lifetime', metavar=_('SECONDS'), help=_('Duration of comment display [default: %s]') % 5, type=float, default=5.0)
-    parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
-    parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
-    parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))
+    parser.add_argument(b'-o', b'--output', metavar=_(b'OUTPUT'), help=_(b'Output file'))
+    parser.add_argument(b'-s', b'--size', metavar=_(b'WIDTHxHEIGHT'), required=True, help=_(b'Stage size in pixels'))
+    parser.add_argument(b'-fn', b'--font', metavar=_(b'FONT'), help=_(b'Specify font face [default: %s]') % _(b'(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
+    parser.add_argument(b'-fs', b'--fontsize', metavar=_(b'SIZE'), help=(_(b'Default font size [default: %s]') % 25), type=float, default=25.0)
+    parser.add_argument(b'-a', b'--alpha', metavar=_(b'ALPHA'), help=_(b'Text opaque'), type=float, default=1.0)
+    parser.add_argument(b'-l', b'--lifetime', metavar=_(b'SECONDS'), help=_(b'Duration of comment display [default: %s]') % 5, type=float, default=5.0)
+    parser.add_argument(b'-p', b'--protect', metavar=_(b'HEIGHT'), help=_(b'Reserve blank on the bottom of the stage'), type=int, default=0)
+    parser.add_argument(b'-r', b'--reduce', action=b'store_true', help=_(b'Reduce the amount of comments if stage is full'))
+    parser.add_argument(b'file', metavar=_(b'FILE'), nargs=b'+', help=_(b'Comment file to be processed'))
     args = parser.parse_args()
     try:
-        width, height = str(args.size).split('x', 1)
+        width, height = bytes(args.size).decode('utf-8', 'replace').split('x', 1)
         width = int(width)
         height = int(height)
     except ValueError:
