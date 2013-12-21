@@ -598,6 +598,8 @@ def ConvertType2(row, height, bottomReserved):
 
 
 def ConvertToFile(filename_or_file, *args, **kwargs):
+    if isinstance(filename_or_file, bytes):
+        filename_or_file = str(bytes(filename_or_file).decode('utf-8', 'replace'))
     if isinstance(filename_or_file, str):
         return open(filename_or_file, *args, **kwargs)
     else:
@@ -644,6 +646,8 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
 
 @export
 def ReadComments(input_files, font_size=25.0, progress_callback=None):
+    if isinstance(input_files, bytes):
+        input_files = str(bytes(input_files).decode('utf-8', 'replace'))
     if isinstance(input_files, str):
         input_files = [input_files]
     else:
