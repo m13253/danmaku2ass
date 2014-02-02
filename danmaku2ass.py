@@ -219,7 +219,18 @@ def ReadCommentsSH5V(f, fontsize):
             c_color = str(comment['color'])
             c = str(comment['text'])
             size = fontsize
-            yield (float(c_at), int(c_date), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:], 16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            if c_type != '7':
+                yield (float(c_at), int(c_date), i, c, {'0': 0, '1': 0, '4': 2, '5': 1}[c_type], int(c_color[1:], 16), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            else:
+                c_x = float(comment['x'])
+                c_y = float(comment['y'])
+                size = int(comment['size'])
+                dur = int(comment['dur'])
+                data1 = float(comment['data1'])
+                data2 = float(comment['data2'])
+                data3 = int(comment['data3'])
+                data4 = int(comment['data4'])
+                yield (float(c_at), int(c_date), i, c, 'sH5Vpos', int(c_color[1:], 16), size, 0, 0, c_x, c_y, dur, data1, data2, data3, data4)
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %r') % comment)
             continue
@@ -306,7 +317,6 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             logging.warning(_('Invalid comment: %r') % c[3])
         except IndexError:
             logging.warning(_('Invalid comment: %r') % c)
-
 
 def WriteCommentAcfunPositioned(f, c, width, height, styleid):
     AcfunPlayerSize = (560, 400)
@@ -425,6 +435,52 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
     except (IndexError, ValueError) as e:
         logging.warning(_('Invalid comment: %r') % c[3])
 
+def WriteCommentSH5VPositioned(f, c, width, height, styleid):
+
+    def GetTransformStyles(x=None, y=None, fsize=None, rotate_z=None, rotate_y=None, color=None, alpha=None):
+        styles = []
+        if x is not None and y is not None:
+            styles.append('\\pos(%s, %s)' % (x, y))
+        if fsize is not None:
+            styles.append('\\fs%s' % fsize)
+        if rotate_y is not None and rotate_z is not None:
+            styles.append('\\frz%s' % round(rotate_z))
+            if not (-1 < rotate_z < 1):
+                styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180.0)))
+                styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180.0)))
+            else:
+                styles.append('\\fry%s' % round(rotate_y))
+        if color is not None:
+            styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
+            if color == 0x000000:
+                styles.append('\\3c&HFFFFFF&')
+        if alpha is not None:
+            alpha = 255-round(alpha*255)
+            styles.append('\\alpha&H%02X' % alpha)
+        return styles
+
+    def FlushCommentLine(f, text, styles, start_time, end_time, styleid):
+        if end_time > start_time:
+            f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(start_time), 'end': ConvertTimestamp(end_time), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+
+    try:
+        text = ASSEscape(str(c[3]))
+        to_x = round(float(c[9])*width)
+        to_y = round(float(c[10])*height)
+        to_rotate_z = -int(c[14])
+        to_rotate_y = -int(c[15])
+        to_color = c[5]
+        to_alpha = float(c[12])
+        #Note: Alpha transition hasn't been worked out yet.
+        to_size = round(int(c[6])*math.sqrt(width*height/307200))
+        #Note: Because sH5V's data is the absolute size of font,temporarily solve by it at present.[*math.sqrt(width/640*height/480)]
+        #But it seems to be working fine...
+        from_time = float(c[0])
+        action_time = float(c[11])/1000
+        transform_styles = GetTransformStyles(to_x, to_y, to_size, to_rotate_z, to_rotate_y, to_color, to_alpha)
+        FlushCommentLine(f, text, transform_styles, from_time, from_time+action_time, styleid)
+    except (IndexError, ValueError) as e:
+        logging.warning(_('Invalid comment: %r') % c[3])
 
 # Result: (f, dx, dy)
 # To convert: NewX = f*x+dx, NewY = f*y+dy
@@ -450,7 +506,6 @@ def GetZoomFactor(SourceSize, TargetSize):
     except ZeroDivisionError:
         GetZoomFactor.Cached_Result = (1, 0, 0)
         return GetZoomFactor.Cached_Result
-
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
@@ -479,6 +534,8 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
             WriteCommentBilibiliPositioned(f, i, width, height, styleid)
         elif i[4] == 'acfunpos':
             WriteCommentAcfunPositioned(f, i, width, height, styleid)
+        elif i[4] == 'sH5Vpos':
+            WriteCommentSH5VPositioned(f, i, width, height, styleid)
         else:
             logging.warning(_('Invalid comment: %r') % i[3])
     if progress_callback:
