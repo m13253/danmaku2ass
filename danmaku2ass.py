@@ -318,6 +318,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         except IndexError:
             logging.warning(_('Invalid comment: %r') % c)
 
+
 def WriteCommentAcfunPositioned(f, c, width, height, styleid):
     AcfunPlayerSize = (560, 400)
     ZoomFactor = GetZoomFactor(AcfunPlayerSize, (width, height))
@@ -445,11 +446,7 @@ def WriteCommentSH5VPositioned(f, c, width, height, styleid):
             styles.append('\\fs%s' % fsize)
         if rotate_y is not None and rotate_z is not None:
             styles.append('\\frz%s' % round(rotate_z))
-            if not (-1 < rotate_z < 1):
-                styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180.0)))
-                styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180.0)))
-            else:
-                styles.append('\\fry%s' % round(rotate_y))
+            styles.append('\\fry%s' % round(rotate_y))
         if color is not None:
             styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
             if color == 0x000000:
@@ -506,6 +503,7 @@ def GetZoomFactor(SourceSize, TargetSize):
     except ZeroDivisionError:
         GetZoomFactor.Cached_Result = (1, 0, 0)
         return GetZoomFactor.Cached_Result
+
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-02 18:51+0800\n"
+"POT-Creation-Date: 2014-02-03 16:50+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
@@ -15,92 +15,92 @@ msgid "Invalid comment: %s"
 msgstr "Invalid comment: %s"
 
 #: danmaku2ass.py:158 danmaku2ass.py:192 danmaku2ass.py:235 danmaku2ass.py:317
-#: danmaku2ass.py:319 danmaku2ass.py:436 danmaku2ass.py:483 danmaku2ass.py:540
+#: danmaku2ass.py:319 danmaku2ass.py:437 danmaku2ass.py:480 danmaku2ass.py:538
 #, python-format
 msgid "Invalid comment: %r"
 msgstr "Invalid comment: %r"
 
-#: danmaku2ass.py:690 danmaku2ass.py:738
+#: danmaku2ass.py:688 danmaku2ass.py:736
 msgid "(FONT) sans-serif"
 msgstr "(FONT) Helvetica"
 
-#: danmaku2ass.py:719
+#: danmaku2ass.py:717
 #, python-format
 msgid "Unknown comment file format: %s"
 msgstr "Unknown comment file format: %s"
 
-#: danmaku2ass.py:736
+#: danmaku2ass.py:734
 msgid "OUTPUT"
 msgstr "OUTPUT"
 
-#: danmaku2ass.py:736
+#: danmaku2ass.py:734
 msgid "Output file"
 msgstr "Output file"
 
-#: danmaku2ass.py:737
+#: danmaku2ass.py:735
 msgid "WIDTHxHEIGHT"
 msgstr "WIDTHxHEIGHT"
 
-#: danmaku2ass.py:737
+#: danmaku2ass.py:735
 msgid "Stage size in pixels"
 msgstr "Stage size in pixels"
 
-#: danmaku2ass.py:738
+#: danmaku2ass.py:736
 msgid "FONT"
 msgstr "FONT"
 
-#: danmaku2ass.py:738
+#: danmaku2ass.py:736
 #, python-format
 msgid "Specify font face [default: %s]"
 msgstr "Specify font face [default: %s]"
 
-#: danmaku2ass.py:739
+#: danmaku2ass.py:737
 msgid "SIZE"
 msgstr "SIZE"
 
-#: danmaku2ass.py:739
+#: danmaku2ass.py:737
 #, python-format
 msgid "Default font size [default: %s]"
 msgstr "Default font size [default: %s]"
 
-#: danmaku2ass.py:740
+#: danmaku2ass.py:738
 msgid "ALPHA"
 msgstr "ALPHA"
 
-#: danmaku2ass.py:740
+#: danmaku2ass.py:738
 msgid "Text opaque"
 msgstr "Text opaque"
 
-#: danmaku2ass.py:741
+#: danmaku2ass.py:739
 msgid "SECONDS"
 msgstr "SECONDS"
 
-#: danmaku2ass.py:741
+#: danmaku2ass.py:739
 #, python-format
 msgid "Duration of comment display [default: %s]"
 msgstr "Duration of comment display [default: %s]"
 
-#: danmaku2ass.py:742
+#: danmaku2ass.py:740
 msgid "HEIGHT"
 msgstr "HEIGHT"
 
-#: danmaku2ass.py:742
+#: danmaku2ass.py:740
 msgid "Reserve blank on the bottom of the stage"
 msgstr "Reserve blank on the bottom of the stage"
 
-#: danmaku2ass.py:743
+#: danmaku2ass.py:741
 msgid "Reduce the amount of comments if stage is full"
 msgstr "Reduce the amount of comments if stage is full"
 
-#: danmaku2ass.py:744
+#: danmaku2ass.py:742
 msgid "FILE"
 msgstr "FILE"
 
-#: danmaku2ass.py:744
+#: danmaku2ass.py:742
 msgid "Comment file to be processed"
 msgstr "Comment file to be processed"
 
-#: danmaku2ass.py:751
+#: danmaku2ass.py:749
 #, python-format
 msgid "Invalid stage size: %r"
 msgstr "Invalid stage size: %r"

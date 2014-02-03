@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-02 18:51+0800\n"
+"POT-Creation-Date: 2014-02-03 16:50+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -15,92 +15,92 @@ msgid "Invalid comment: %s"
 msgstr "無效彈幕：%s"
 
 #: danmaku2ass.py:158 danmaku2ass.py:192 danmaku2ass.py:235 danmaku2ass.py:317
-#: danmaku2ass.py:319 danmaku2ass.py:436 danmaku2ass.py:483 danmaku2ass.py:540
+#: danmaku2ass.py:319 danmaku2ass.py:437 danmaku2ass.py:480 danmaku2ass.py:538
 #, python-format
 msgid "Invalid comment: %r"
 msgstr "無效彈幕：%r"
 
-#: danmaku2ass.py:690 danmaku2ass.py:738
+#: danmaku2ass.py:688 danmaku2ass.py:736
 msgid "(FONT) sans-serif"
 msgstr "(FONT) Microsoft JhengHei"
 
-#: danmaku2ass.py:719
+#: danmaku2ass.py:717
 #, python-format
 msgid "Unknown comment file format: %s"
 msgstr "未知的彈幕檔案格式：%s"
 
-#: danmaku2ass.py:736
+#: danmaku2ass.py:734
 msgid "OUTPUT"
 msgstr "輸出"
 
-#: danmaku2ass.py:736
+#: danmaku2ass.py:734
 msgid "Output file"
 msgstr "輸出檔案"
 
-#: danmaku2ass.py:737
+#: danmaku2ass.py:735
 msgid "WIDTHxHEIGHT"
 msgstr "寬x高"
 
-#: danmaku2ass.py:737
+#: danmaku2ass.py:735
 msgid "Stage size in pixels"
 msgstr "舞臺尺寸的畫素數目"
 
-#: danmaku2ass.py:738
+#: danmaku2ass.py:736
 msgid "FONT"
 msgstr "字型"
 
-#: danmaku2ass.py:738
+#: danmaku2ass.py:736
 #, python-format
 msgid "Specify font face [default: %s]"
 msgstr "指定字型名稱 [默認: %s]"
 
-#: danmaku2ass.py:739
+#: danmaku2ass.py:737
 msgid "SIZE"
 msgstr "尺寸"
 
-#: danmaku2ass.py:739
+#: danmaku2ass.py:737
 #, python-format
 msgid "Default font size [default: %s]"
 msgstr "默認字型大小 [默認: %s]"
 
-#: danmaku2ass.py:740
+#: danmaku2ass.py:738
 msgid "ALPHA"
 msgstr "ALPHA"
 
-#: danmaku2ass.py:740
+#: danmaku2ass.py:738
 msgid "Text opaque"
 msgstr "文字不透明度"
 
-#: danmaku2ass.py:741
+#: danmaku2ass.py:739
 msgid "SECONDS"
 msgstr "秒數"
 
-#: danmaku2ass.py:741
+#: danmaku2ass.py:739
 #, python-format
 msgid "Duration of comment display [default: %s]"
 msgstr "彈幕顯示時長 [默認: %s]"
 
-#: danmaku2ass.py:742
+#: danmaku2ass.py:740
 msgid "HEIGHT"
 msgstr "高度"
 
-#: danmaku2ass.py:742
+#: danmaku2ass.py:740
 msgid "Reserve blank on the bottom of the stage"
 msgstr "在舞臺底部預留空位"
 
-#: danmaku2ass.py:743
+#: danmaku2ass.py:741
 msgid "Reduce the amount of comments if stage is full"
 msgstr "在舞臺滿時減少彈幕數量"
 
-#: danmaku2ass.py:744
+#: danmaku2ass.py:742
 msgid "FILE"
 msgstr "檔案"
 
-#: danmaku2ass.py:744
+#: danmaku2ass.py:742
 msgid "Comment file to be processed"
 msgstr "將要處理的彈幕檔案"
 
-#: danmaku2ass.py:751
+#: danmaku2ass.py:749
 #, python-format
 msgid "Invalid stage size: %r"
 msgstr "無效舞臺尺寸：%r"
