@@ -436,6 +436,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
     except (IndexError, ValueError) as e:
         logging.warning(_('Invalid comment: %r') % c[3])
 
+
 def WriteCommentSH5VPositioned(f, c, width, height, styleid):
 
     def GetTransformStyles(x=None, y=None, fsize=None, rotate_z=None, rotate_y=None, color=None, alpha=None):
@@ -478,6 +479,7 @@ def WriteCommentSH5VPositioned(f, c, width, height, styleid):
         FlushCommentLine(f, text, transform_styles, from_time, from_time+action_time, styleid)
     except (IndexError, ValueError) as e:
         logging.warning(_('Invalid comment: %r') % c[3])
+
 
 # Result: (f, dx, dy)
 # To convert: NewX = f*x+dx, NewY = f*y+dy
