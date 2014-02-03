@@ -68,7 +68,7 @@ msgid "ALPHA"
 msgstr "ALPHA"
 
 #: danmaku2ass.py:738
-msgid "Text opaque"
+msgid "Text opacity"
 msgstr "文字不透明度"
 
 #: danmaku2ass.py:739

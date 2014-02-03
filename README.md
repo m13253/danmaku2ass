@@ -59,7 +59,7 @@ optional arguments:
   -fs SIZE, --fontsize SIZE
                         Default font size [default: 25]
   -a ALPHA, --alpha ALPHA
-                        Text opaque
+                        Text opacity
   -l SECONDS, --lifetime SECONDS
                         Duration of comment display [default: 5]
   -p HEIGHT, --protect HEIGHT
