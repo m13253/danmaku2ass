@@ -705,7 +705,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
             fo = sys.stdout
         ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opacity, comment_duration, is_reduce_comments, progress_callback)
     finally:
-        if output_file and fo:
+        if output_file and fo != output_file:
             fo.close()
 
 
