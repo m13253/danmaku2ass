@@ -275,8 +275,8 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         to_alpha = float(alpha.get(1, from_alpha))
         from_alpha = 255-round(from_alpha*255)
         to_alpha = 255-round(to_alpha*255)
-        rotate_z = -int(comment_args.get(5, 0))
-        rotate_y = -int(comment_args.get(6, 0))
+        rotate_z = int(comment_args.get(5, 0))
+        rotate_y = int(comment_args.get(6, 0))
         lifetime = float(comment_args.get(3, 4500))
         duration = int(comment_args.get(9, lifetime*1000))
         delay = int(comment_args.get(10, 0))
@@ -287,13 +287,11 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             styles.append('\\pos(%s, %s)' % (from_x, from_y))
         else:
             styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_x, from_y, to_x, to_y, delay, delay+duration))
-        if rotate_z != 0:
-            styles.append('\\frz%s' % rotate_z)
-            if rotate_y != 0:
-                styles.append('\\frx%s' % (rotate_y*math.sin(rotate_z*math.pi/180.0)))
-                styles.append('\\fry%s' % (rotate_y*math.cos(rotate_z*math.pi/180.0)))
-        elif rotate_y != 0:
-            styles.append('\\fry%s' % rotate_y)
+        styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (from_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+        if (from_x, from_y) != (to_x, to_y):
+            styles.append('\\t(%s, %s, ' % (delay, delay+duration))
+            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+            styles.append(')')
         if fontface:
             styles.append('\\fn%s' % ASSEscape(fontface))
         styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
@@ -513,10 +511,10 @@ def GetZoomFactor(SourceSize, TargetSize):
 # Result: (rotX, rotY, rotZ, shearX, shearY)
 def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
     X = 2*X-1;
-    rotY = 180-((180-rotY)%360)
-    rotZ = 180-((180-rotZ)%360)
+    rotY = 180-((180+rotY)%360)  # Positive value means clockwise in Flash
+    rotZ = 180-((180+rotZ)%360)
     if 0 <= rotY <= 180:
-        costheta = (FOV*math.cos(rotY*math.pi/180.0)-X*math.sin(rotY*math.pi/180.0))/(FOV+max(2, abs(X)+1)*sin(rotY*math.pi/180.0))
+        costheta = (FOV*math.cos(rotY*math.pi/180.0)-X*math.sin(rotY*math.pi/180.0))/(FOV+max(2, abs(X)+1)*math.sin(rotY*math.pi/180.0))
         try:
             if costheta > 1:
                 costheta = 1
@@ -528,7 +526,7 @@ def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
             logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
         theta = math.acos(costheta)*180/math.pi
     else:
-        costheta = (FOV*math.cos(rotY*math.pi/180.0)+X*math.sin(rotY*math.pi/180.0))/(FOV-max(2, abs(X)+1)*sin(rotY*math.pi/180.0))
+        costheta = (FOV*math.cos(rotY*math.pi/180.0)+X*math.sin(rotY*math.pi/180.0))/(FOV-max(2, abs(X)+1)*math.sin(rotY*math.pi/180.0))
         try:
             if costheta > 1:
                 costheta = 1
