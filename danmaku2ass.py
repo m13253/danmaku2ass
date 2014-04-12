@@ -248,7 +248,8 @@ CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadC
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
-    BiliPlayerSize = (672, 438)
+    #BiliPlayerSize = (512, 384)  # Bilibili player version 2012
+    BiliPlayerSize = (672, 438)  # Bilibili player version 2014
     ZoomFactor = GetZoomFactor(BiliPlayerSize, (width, height))
 
     def GetPosition(InputPos, isHeight):
