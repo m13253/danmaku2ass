@@ -333,13 +333,9 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             styles.append('\\fscx%s' % scale_x)
         if scale_y is not None:
             styles.append('\\fscy%s' % scale_y)
-        if rotate_y is not None and rotate_z is not None:
-            styles.append('\\frz%s' % round(rotate_z))
-            if not (-1 < rotate_z < 1):
-                styles.append('\\frx%s' % round(rotate_y*math.sin(rotate_z*math.pi/180.0)))
-                styles.append('\\fry%s' % round(rotate_y*math.cos(rotate_z*math.pi/180.0)))
-            else:
-                styles.append('\\fry%s' % round(rotate_y))
+        if rotate_z is not None and rotate_y is not None:
+            assert x is not None
+            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
         if color is not None:
             styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
             if color == 0x000000:
@@ -378,8 +374,8 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         to_y = round(GetPosition(int(to_pos.get('y', 0)), True))
         to_scale_x = round(float(comment_args.get('e', 1.0))*100)
         to_scale_y = round(float(comment_args.get('f', 1.0))*100)
-        to_rotate_z = -float(comment_args.get('r', 0.0))
-        to_rotate_y = -float(comment_args.get('k', 0.0))
+        to_rotate_z = float(comment_args.get('r', 0.0))
+        to_rotate_y = float(comment_args.get('k', 0.0))
         to_color = c[5]
         to_alpha = float(comment_args.get('a', 1.0))
         from_time = float(comment_args.get('t', 0.0))
@@ -413,19 +409,15 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
                 to_alpha = float(action['t'])
                 action_styles.append('\\alpha&H%02X' % (255-round(to_alpha*255)))
             if 'd' in action:
-                to_rotate_z = -float(action['d'])
+                to_rotate_z = float(action['d'])
             if 'e' in action:
-                to_rotate_y = -float(action['e'])
-            if ('d' in action) or ('e' in action):
-                action_styles.append('\\frz%s' % round(to_rotate_z))
-                if not (-1 < to_rotate_z < 1):
-                    action_styles.append('\\frx%s' % round(to_rotate_y*math.sin(to_rotate_z*math.pi/180.0)))
-                    action_styles.append('\\fry%s' % round(to_rotate_y*math.cos(to_rotate_z*math.pi/180.0)))
-                else:
-                    action_styles.append('\\fry%s' % round(to_rotate_y))
+                to_rotate_y = float(action['e'])
             if ('x' in action) or ('y' in action):
-                transform_styles = GetTransformStyles(None, None, from_scale_x, from_scale_y, from_rotate_z, from_rotate_y, from_color, from_alpha)
+                transform_styles = GetTransformStyles(None, None, from_scale_x, from_scale_y, None, None, from_color, from_alpha)
                 transform_styles.append('\\move(%s, %s, %s, %s)' % (from_x, from_y, to_x, to_y))
+                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+            elif ('d' in action) or ('e' in action):
+                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
             else:
                 transform_styles = GetTransformStyles(from_x, from_y, from_scale_x, from_scale_y, from_rotate_z, from_rotate_y, from_color, from_alpha)
             if action_styles:
@@ -537,7 +529,7 @@ def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
         except ValueError:
             logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
         theta = -math.acos(costheta)*180/math.pi
-    return (theta*math.sin(rotZ*math.pi/180.0), theta*math.cos(rotZ*math.pi/180.0), rotZ, 0, 0)
+    return (round(theta*math.sin(rotZ*math.pi/180.0)), round(theta*math.cos(rotZ*math.pi/180.0)), round(rotZ), 0, 0)
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
