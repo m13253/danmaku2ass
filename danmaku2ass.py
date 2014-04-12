@@ -515,6 +515,41 @@ def GetZoomFactor(SourceSize, TargetSize):
         return GetZoomFactor.Cached_Result
 
 
+# Calculation is based on https://github.com/jabbany/CommentCoreLibrary/issues/5#issuecomment-40087282
+# Input: X relative horizonal coordinate: 0 for left edge, 1 for right edge.
+# FOV = 1.0/math.tan(100*math.pi/360.0)
+# Result: (rotX, rotY, rotZ, shearX, shearY)
+def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
+    X = 2*X-1;
+    rotY = 180-((180-rotY)%360)
+    rotZ = 180-((180-rotZ)%360)
+    if 0 <= rotY <= 180:
+        costheta = (FOV*math.cos(rotY*math.pi/180.0)-X*math.sin(rotY*math.pi/180.0))/(FOV+max(2, abs(X)+1)*sin(rotY*math.pi/180.0))
+        try:
+            if costheta > 1:
+                costheta = 1
+                raise ValueError
+            elif costheta < -1:
+                costheta = -1
+                raise ValueError
+        except ValueError:
+            logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
+        theta = math.acos(costheta)*180/math.pi
+    else:
+        costheta = (FOV*math.cos(rotY*math.pi/180.0)+X*math.sin(rotY*math.pi/180.0))/(FOV-max(2, abs(X)+1)*sin(rotY*math.pi/180.0))
+        try:
+            if costheta > 1:
+                costheta = 1
+                raise ValueError
+            elif costheta < -1:
+                costheta = -1
+                raise ValueError
+        except ValueError:
+            logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
+        theta = -math.acos(costheta)*180/math.pi
+    return (theta*math.sin(rotZ*math.pi/180.0), theta*math.cos(rotZ*math.pi/180.0), rotZ, 0, 0)
+
+
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
