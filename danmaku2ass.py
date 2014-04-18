@@ -519,7 +519,7 @@ def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
             logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
         theta = math.acos(costheta)*180/math.pi
     else:
-        costheta = (FOV*math.cos(rotY*math.pi/180.0)+X*math.sin(rotY*math.pi/180.0))/(FOV-max(2, abs(X)+1)*math.sin(rotY*math.pi/180.0))
+        costheta = (FOV*math.cos(rotY*math.pi/180.0)-X*math.sin(rotY*math.pi/180.0))/(FOV-max(2, abs(X)+1)*math.sin(rotY*math.pi/180.0))
         try:
             if costheta > 1:
                 costheta = 1
