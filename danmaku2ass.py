@@ -296,10 +296,10 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             styles.append('\\pos(%s, %s)' % (from_x, from_y))
         else:
             styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_x, from_y, to_x, to_y, delay, delay+duration))
-        styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (from_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+        styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (from_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (from_y-ZoomFactor[2])/(height-ZoomFactor[2]*2)))
         if (from_x, from_y) != (to_x, to_y):
             styles.append('\\t(%s, %s, ' % (delay, delay+duration))
-            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (to_y-ZoomFactor[2])/(height-ZoomFactor[2]*2)))
             styles.append(')')
         if fontface:
             styles.append('\\fn%s' % ASSEscape(fontface))
@@ -344,7 +344,8 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             styles.append('\\fscy%s' % scale_y)
         if rotate_z is not None and rotate_y is not None:
             assert x is not None
-            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+            assert y is not None
+            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (y-ZoomFactor[2])/(height-ZoomFactor[2]*2)))
         if color is not None:
             styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
             if color == 0x000000:
@@ -424,9 +425,9 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             if ('x' in action) or ('y' in action):
                 transform_styles = GetTransformStyles(None, None, from_scale_x, from_scale_y, None, None, from_color, from_alpha)
                 transform_styles.append('\\move(%s, %s, %s, %s)' % (from_x, from_y, to_x, to_y))
-                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (to_y-ZoomFactor[2])/(width-ZoomFactor[2]*2)))
             elif ('d' in action) or ('e' in action):
-                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2)))
+                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (to_y-ZoomFactor[2])/(width-ZoomFactor[2]*2)))
             else:
                 transform_styles = GetTransformStyles(from_x, from_y, from_scale_x, from_scale_y, from_rotate_z, from_rotate_y, from_color, from_alpha)
             if action_styles:
@@ -508,10 +509,12 @@ def GetZoomFactor(SourceSize, TargetSize):
 
 # Calculation is based on https://github.com/jabbany/CommentCoreLibrary/issues/5#issuecomment-40087282
 # Input: X relative horizonal coordinate: 0 for left edge, 1 for right edge.
+#        Y relative vertical coordinate: 0 for top edge, 1 for bottom edge.
 # FOV = 1.0/math.tan(100*math.pi/360.0)
 # Result: (rotX, rotY, rotZ, shearX, shearY)
-def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
-    X = 2*X-1;
+def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
+    X = 2*X-1
+    Y = 2*Y-1
     rotY = 180-((180+rotY)%360)  # Positive value means clockwise in Flash
     rotZ = 180-((180+rotZ)%360)
     if 0 <= rotY <= 180:
@@ -538,7 +541,7 @@ def ConvertFlashRotation(rotY, rotZ, X, FOV=math.tan(2*math.pi/9.0)):
         except ValueError:
             logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
         theta = -math.acos(costheta)*180/math.pi
-    return (round(theta*math.sin(rotZ*math.pi/180.0)), round(theta*math.cos(rotZ*math.pi/180.0)), round(rotZ), 0, 0)
+    return (round(theta*math.sin(rotZ*math.pi/180.0)), round(theta*math.cos(rotZ*math.pi/180.0)), round(rotZ), 0, round(-0.75*Y*math.sin(theta*math.pi/180.0), 3))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
