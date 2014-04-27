@@ -501,40 +501,51 @@ def GetZoomFactor(SourceSize, TargetSize):
 
 
 # Calculation is based on https://github.com/jabbany/CommentCoreLibrary/issues/5#issuecomment-40087282
+#                     and https://github.com/m13253/danmaku2ass/issues/7#issuecomment-41489422
 # Input: X relative horizonal coordinate: 0 for left edge, 1 for right edge.
 #        Y relative vertical coordinate: 0 for top edge, 1 for bottom edge.
 # FOV = 1.0/math.tan(100*math.pi/360.0)
 # Result: (rotX, rotY, rotZ, shearX, shearY)
 def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
+    def WrapAngle(deg):
+        return 180-((180+deg)%360)
+    def CalcPerspectiveCorrection(alpha, X, FOV=FOV):
+        alpha = WrapAngle(alpha)
+        if 0 <= alpha <= 180:
+            costheta = (FOV*math.cos(alpha*math.pi/180.0)-X*math.sin(alpha*math.pi/180.0))/(FOV+max(2, abs(X)+1)*math.sin(alpha*math.pi/180.0))
+            try:
+                if costheta > 1:
+                    costheta = 1
+                    raise ValueError
+                elif costheta < -1:
+                    costheta = -1
+                    raise ValueError
+            except ValueError:
+                logging.error('Clipped rotation angle: (alpha=%s, X=%s), it is a bug!' % (alpha, X))
+            theta = math.acos(costheta)*180/math.pi
+        else:
+            costheta = (FOV*math.cos(alpha*math.pi/180.0)-X*math.sin(alpha*math.pi/180.0))/(FOV-max(2, abs(X)+1)*math.sin(alpha*math.pi/180.0))
+            try:
+                if costheta > 1:
+                    costheta = 1
+                    raise ValueError
+                elif costheta < -1:
+                    costheta = -1
+                    raise ValueError
+            except ValueError:
+                logging.error('Clipped rotation angle: (alpha=%s, X=%s), it is a bug!' % (alpha, X))
+            theta = -math.acos(costheta)*180/math.pi
+        return WrapAngle(theta)
     X = 2*X-1
     Y = 2*Y-1
-    rotY = 180-((180+rotY)%360)  # Positive value means clockwise in Flash
-    rotZ = 180-((180+rotZ)%360)
-    if 0 <= rotY <= 180:
-        costheta = (FOV*math.cos(rotY*math.pi/180.0)-X*math.sin(rotY*math.pi/180.0))/(FOV+max(2, abs(X)+1)*math.sin(rotY*math.pi/180.0))
-        try:
-            if costheta > 1:
-                costheta = 1
-                raise ValueError
-            elif costheta < -1:
-                costheta = -1
-                raise ValueError
-        except ValueError:
-            logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
-        theta = math.acos(costheta)*180/math.pi
-    else:
-        costheta = (FOV*math.cos(rotY*math.pi/180.0)-X*math.sin(rotY*math.pi/180.0))/(FOV-max(2, abs(X)+1)*math.sin(rotY*math.pi/180.0))
-        try:
-            if costheta > 1:
-                costheta = 1
-                raise ValueError
-            elif costheta < -1:
-                costheta = -1
-                raise ValueError
-        except ValueError:
-            logging.error('Clipped rotation angle: (rotY=%s, rotZ=%s, X=%s), it is a bug!' % (rotY, rotZ, X))
-        theta = -math.acos(costheta)*180/math.pi
-    return (round(theta*math.sin(rotZ*math.pi/180.0)), round(theta*math.cos(rotZ*math.pi/180.0)), round(rotZ), 0, round(-0.75*Y*math.sin(theta*math.pi/180.0), 3))
+    rotY = -rotY*math.pi/180.0  # Positive value means clockwise in Flas
+    rotZ = -rotZ*math.pi/180.0
+    outY = math.atan2(-math.sin(rotY)*math.cos(rotZ), math.cos(rotY))*180/math.pi
+    outZ = math.atan2(-math.cos(rotY)*math.sin(rotZ), math.cos(rotZ))*180/math.pi
+    outX = math.asin(-math.sin(rotY)*math.sin(rotZ))*180/math.pi
+    outX = CalcPerspectiveCorrection(outX, -Y, FOV*0.75)
+    outY = CalcPerspectiveCorrection(outY, X, FOV)
+    return (round(outX), round(outY), round(outZ), 0, round(-0.75*Y*math.sin(outY*math.pi/180.0), 3))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
