@@ -555,10 +555,21 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
         rotZ = rotZ*math.pi/180.0
         outY = math.atan2(-math.sin(rotY)*math.cos(rotZ), math.cos(rotY))*180/math.pi
         outZ = math.atan2(-math.cos(rotY)*math.sin(rotZ), math.cos(rotZ))*180/math.pi
-        outX = math.asin(-math.sin(rotY)*math.sin(rotZ))*180/math.pi
+        #outX = math.asin(math.sin(rotY)*math.sin(rotZ))*180/math.pi
+        outX = math.acos(math.cos(rotY)/math.cos(outY*math.pi/180.0))*180/math.pi
+        '''
+        print(
+            (rotY*180.0/math.pi, rotZ*180.0/math.pi),
+            (outX, outY, outZ),
+            (
+                math.sin(rotY)*math.sin(rotZ),
+                -(math.sin(rotY)+math.sin(outY*math.pi/180.0)*math.cos(outZ*math.pi/180.0))/math.cos(outY*math.pi/180.0)/math.sin(outZ*math.pi/180.0)
+            )
+        )
+        '''
     outX = CalcPerspectiveCorrection(outX, -Y, FOV*0.75)
     outY = CalcPerspectiveCorrection(outY, X, FOV)
-    return (round(outX), round(outY), round(outZ), 0, round(-0.75*Y*math.sin(outY*math.pi/180.0), 3))
+    return (WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), 0, round(-0.75*Y*math.sin(outY*math.pi/180.0), 3))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
