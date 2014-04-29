@@ -548,7 +548,9 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
         return WrapAngle(theta)
     X = 2*X-1
     Y = 2*Y-1
-    if WrapAngle(rotY) in (0, 180) or WrapAngle(rotZ) in (0, 180):
+    rotY = WrapAngle(rotY)
+    rotZ = WrapAngle(rotZ)
+    if rotY in (0, 180) or rotZ in (0, 180):
         outX = 0
         outY = -rotY  # Positive value means clockwise in Flash
         outZ = -rotZ
