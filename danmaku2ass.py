@@ -516,7 +516,7 @@ def GetZoomFactor(SourceSize, TargetSize):
 # Result: (rotX, rotY, rotZ, shearX, shearY)
 def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
     def WrapAngle(deg):
-        return 180-((180+deg)%360)
+        return 180-((180-deg)%360)
     def CalcPerspectiveCorrection(alpha, X, FOV=FOV):
         alpha = WrapAngle(alpha)
         if FOV is None:
