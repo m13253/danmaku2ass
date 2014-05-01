@@ -553,7 +553,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
         outZ = math.atan2(-math.cos(rotY)*math.sin(rotZ), math.cos(rotZ))*180/math.pi
         outX = math.asin(math.sin(rotY)*math.sin(rotZ))*180/math.pi
     if FOV is not None:
-        outX = CalcPerspectiveCorrection(outX, -Y, FOV*0.75)
+        #outX = CalcPerspectiveCorrection(outX, -Y, FOV*0.75)
         outY = CalcPerspectiveCorrection(outY, X, FOV)
     return (WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), 0, round(-0.75*Y*math.sin(outY*math.pi/180.0), 3))
 
