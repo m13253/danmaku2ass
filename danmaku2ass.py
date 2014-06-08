@@ -528,9 +528,16 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
         outX = math.asin(math.sin(rotY)*math.sin(rotZ))*180/math.pi
     rotY *= math.pi/180.0
     rotZ *= math.pi/180.0
-    trX = (X*math.cos(rotZ)+Y*math.sin(rotZ))/math.cos(rotY)+math.tan(rotY*math.pi/180.0)+(1-math.cos(rotZ)/math.cos(rotY))*width/2-math.sin(rotZ)/math.cos(rotY)*height/2
+    trX = (X*math.cos(rotZ)+Y*math.sin(rotZ))/math.cos(rotY)+(1-math.cos(rotZ)/math.cos(rotY))*width/2-math.sin(rotZ)/math.cos(rotY)*height/2
     trY = Y*math.cos(rotZ)-X*math.sin(rotZ)+math.sin(rotZ)*width/2+(1-math.cos(rotZ))*height/2
-    return (round(trX), round(trY), WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), 100, 100)
+    trZ = (trX-width/2)*math.sin(rotY)
+    FOV = width*math.tan(2*math.pi/9.0)/2
+    scaleXY = FOV/(FOV+trZ)
+    if scaleXY < 0:
+        logging.error('Clipped rotation: trZ == %.0f < %.0f' % (trZ, FOV));
+    trX = (trX-width/2)*scaleXY+width/2
+    trY = (trY-height/2)*scaleXY+height/2
+    return (round(trX), round(trY), WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), round(scaleXY*100), round(scaleXY*100))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
