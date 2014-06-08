@@ -520,14 +520,14 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
         outX = 0
         outY = -rotY  # Positive value means clockwise in Flash
         outZ = -rotZ
+        rotY *= math.pi/180.0
+        rotZ *= math.pi/180.0
     else:
-        rotY = rotY*math.pi/180.0
-        rotZ = rotZ*math.pi/180.0
+        rotY *= math.pi/180.0
+        rotZ *= math.pi/180.0
         outY = math.atan2(-math.sin(rotY)*math.cos(rotZ), math.cos(rotY))*180/math.pi
         outZ = math.atan2(-math.cos(rotY)*math.sin(rotZ), math.cos(rotZ))*180/math.pi
         outX = math.asin(math.sin(rotY)*math.sin(rotZ))*180/math.pi
-    rotY *= math.pi/180.0
-    rotZ *= math.pi/180.0
     trX = (X*math.cos(rotZ)+Y*math.sin(rotZ))/math.cos(rotY)+(1-math.cos(rotZ)/math.cos(rotY))*width/2-math.sin(rotZ)/math.cos(rotY)*height/2
     trY = Y*math.cos(rotZ)-X*math.sin(rotZ)+math.sin(rotZ)*width/2+(1-math.cos(rotZ))*height/2
     trZ = (trX-width/2)*math.sin(rotY)
