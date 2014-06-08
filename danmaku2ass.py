@@ -284,15 +284,17 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         delay = int(comment_args.get(10, 0))
         fontface = comment_args.get(12)
         isborder = comment_args.get(11, 'true')
-        styles = []
-        if (from_x, from_y) == (to_x, to_y):
-            styles.append('\\pos(%s, %s)' % (from_x, from_y))
+        from_rotarg = ConvertFlashRotation(rotate_y, rotate_z, from_x, from_y, width, height)
+        to_rotarg = ConvertFlashRotation(rotate_y, rotate_z, to_x, to_y, width, height)
+        styles = ['\\org(%s, %s)' % (width//2, height//2)]
+        if from_rotarg[0:2] == to_rotarg[0:2]:
+            styles.append('\\pos(%s, %s)' % (from_rotarg[0:2]))
         else:
-            styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_x, from_y, to_x, to_y, delay, delay+duration))
-        styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (from_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (from_y-ZoomFactor[2])/(height-ZoomFactor[2]*2)))
+            styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_rotarg[0:2]+to_rotarg[0:2]+(delay, delay+duration)))
+        styles.append('\\frx%s\\fry%s\\frz%s\\fscx%s\\fscy%s' % (from_rotarg[2:7]))
         if (from_x, from_y) != (to_x, to_y):
             styles.append('\\t(%s, %s, ' % (delay, delay+duration))
-            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (to_y-ZoomFactor[2])/(height-ZoomFactor[2]*2)))
+            styles.append('\\frx%s\\fry%s\\frz%s\\fscx%s\\fscy%s' % (to_rotarg[2:7]))
             styles.append(')')
         if fontface:
             styles.append('\\fn%s' % ASSEscape(fontface))
@@ -329,16 +331,22 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
 
     def GetTransformStyles(x=None, y=None, scale_x=None, scale_y=None, rotate_z=None, rotate_y=None, color=None, alpha=None):
         styles = []
-        if x is not None and y is not None:
-            styles.append('\\pos(%s, %s)' % (x, y))
-        if scale_x is not None:
-            styles.append('\\fscx%s' % scale_x)
-        if scale_y is not None:
-            styles.append('\\fscy%s' % scale_y)
+        out_x, out_y = x, y
         if rotate_z is not None and rotate_y is not None:
             assert x is not None
             assert y is not None
-            styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(rotate_y, rotate_z, (x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (y-ZoomFactor[2])/(height-ZoomFactor[2]*2)))
+            rotarg = ConvertFlashRotation(rotate_y, rotate_z, x, y, width, height)
+            out_x, out_y = rotarg[0:2]
+            if scale_x is None:
+                scale_x = 1
+            if scale_y is None:
+                scale_y = 1
+            styles.append('\\frx%s\\fry%s\\frz%s\\fscx%s\\fscy%s' % (rotarg[2:5]+(round(rotarg[5]*scale_x), round(rotarg[6]*scale_y))))
+        else:
+            if scale_x is not None:
+                styles.append('\\fscx%s' % round(scale_x*100))
+            if scale_y is not None:
+                styles.append('\\fscy%s' % round(scale_y*100))
         if color is not None:
             styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
             if color == 0x000000:
@@ -346,7 +354,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         if alpha is not None:
             alpha = 255-round(alpha*255)
             styles.append('\\alpha&H%02X' % alpha)
-        return styles
+        return out_x, out_y, styles
 
     def FlushCommentLine(f, text, styles, start_time, end_time, styleid):
         if end_time > start_time:
@@ -354,8 +362,8 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
 
     try:
         comment_args = c[3]
-        text = ASSEscape(str(comment_args['n']).replace('\r', '\n').replace('\r', '\n'))
-        common_styles = []
+        text = ASSEscape(str(comment_args['n']).replace('\r', '\n'))
+        common_styles = ['\org(%s, %s)' % (width//2, height//2)]
         anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
         if anchor != 7:
             common_styles.append('\\an%s' % anchor)
@@ -375,8 +383,8 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         to_pos = dict(comment_args.get('p', {'x': 0, 'y': 0}))
         to_x = round(GetPosition(int(to_pos.get('x', 0)), False))
         to_y = round(GetPosition(int(to_pos.get('y', 0)), True))
-        to_scale_x = round(float(comment_args.get('e', 1.0))*100)
-        to_scale_y = round(float(comment_args.get('f', 1.0))*100)
+        to_scale_x = float(comment_args.get('e', 1.0))
+        to_scale_y = float(comment_args.get('f', 1.0))
         to_rotate_z = float(comment_args.get('r', 0.0))
         to_rotate_y = float(comment_args.get('k', 0.0))
         to_color = c[5]
@@ -384,48 +392,45 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         from_time = float(comment_args.get('t', 0.0))
         action_time = float(comment_args.get('l', 3.0))
         actions = list(comment_args.get('z', []))
-        transform_styles = GetTransformStyles(to_x, to_y, to_scale_x, to_scale_y, to_rotate_z, to_rotate_y, to_color, to_alpha)
-        FlushCommentLine(f, text, common_styles+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
+        to_out_x, to_out_y, transform_styles = GetTransformStyles(to_x, to_y, to_scale_x, to_scale_y, to_rotate_z, to_rotate_y, to_color, to_alpha)
+        FlushCommentLine(f, text, common_styles+['\\pos(%s, %s)' % (to_out_x, to_out_y)]+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
+        action_styles = transform_styles
         for action in actions:
             action = dict(action)
             from_x, from_y = to_x, to_y
+            from_out_x, from_out_y = to_out_x, to_out_y
             from_scale_x, from_scale_y = to_scale_x, to_scale_y
             from_rotate_z, from_rotate_y = to_rotate_z, to_rotate_y
             from_color, from_alpha = to_color, to_alpha
+            transform_styles, action_styles = action_styles, []
             from_time += action_time
             action_time = float(action.get('l', 0.0))
-            action_styles = []
             if 'x' in action:
                 to_x = round(GetPosition(int(action['x']), False))
             if 'y' in action:
                 to_y = round(GetPosition(int(action['y']), True))
             if 'f' in action:
-                to_scale_x = round(float(action['f'])*100)
-                action_styles.append('\\fscx%s' % to_scale_x)
+                to_scale_x = float(action['f'])
             if 'g' in action:
-                to_scale_y = round(float(action['g'])*100)
-                action_styles.append('\\fscy%s' % to_scale_y)
+                to_scale_y = float(action['g'])
             if 'c' in action:
                 to_color = int(action['c'])
-                action_styles.append('\\c&H%02X%02X%02X&' % (to_color & 0xff, (to_color >> 8) & 0xff, (to_color >> 16) & 0xff))
             if 't' in action:
                 to_alpha = float(action['t'])
-                action_styles.append('\\alpha&H%02X' % (255-round(to_alpha*255)))
             if 'd' in action:
                 to_rotate_z = float(action['d'])
             if 'e' in action:
                 to_rotate_y = float(action['e'])
-            if ('x' in action) or ('y' in action):
-                transform_styles = GetTransformStyles(None, None, from_scale_x, from_scale_y, None, None, from_color, from_alpha)
-                transform_styles.append('\\move(%s, %s, %s, %s)' % (from_x, from_y, to_x, to_y))
-                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (to_y-ZoomFactor[2])/(width-ZoomFactor[2]*2)))
-            elif ('d' in action) or ('e' in action):
-                action_styles.append('\\frx%s\\fry%s\\frz%s\\fax%s\\fay%s' % ConvertFlashRotation(to_rotate_y, to_rotate_z, (to_x-ZoomFactor[1])/(width-ZoomFactor[1]*2), (to_y-ZoomFactor[2])/(width-ZoomFactor[2]*2)))
+            to_out_x, to_out_y, action_styles = GetTransformStyles(to_x, to_y, from_scale_x, from_scale_y, to_rotate_z, to_rotate_y, from_color, from_alpha)
+            if (from_out_x, from_out_y) == (to_out_x, to_out_y):
+                pos_style = '\\pos(%s, %s)' % (to_out_x, to_out_y)
             else:
-                transform_styles = GetTransformStyles(from_x, from_y, from_scale_x, from_scale_y, from_rotate_z, from_rotate_y, from_color, from_alpha)
+                pos_style = '\\move(%s, %s, %s, %s)' % (from_out_x, from_out_y, to_out_x, to_out_y)
+            styles = common_styles+transform_styles
+            styles.append(pos_style)
             if action_styles:
-                transform_styles.append('\\t(%s)' % (''.join(action_styles)))
-            FlushCommentLine(f, text, common_styles+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
+                styles.append('\\t(%s)' % (''.join(action_styles)))
+            FlushCommentLine(f, text, styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
     except (IndexError, ValueError) as e:
         logging.warning(_('Invalid comment: %r') % c[3])
 
@@ -502,60 +507,38 @@ def GetZoomFactor(SourceSize, TargetSize):
 
 # Calculation is based on https://github.com/jabbany/CommentCoreLibrary/issues/5#issuecomment-40087282
 #                     and https://github.com/m13253/danmaku2ass/issues/7#issuecomment-41489422
-# Input: X relative horizonal coordinate: 0 for left edge, 1 for right edge.
-#        Y relative vertical coordinate: 0 for top edge, 1 for bottom edge.
 # FOV = 1.0/math.tan(100*math.pi/360.0)
-# Result: (rotX, rotY, rotZ, shearX, shearY)
-def ConvertFlashRotation(rotY, rotZ, X, Y, FOV=math.tan(2*math.pi/9.0)):
+# Result: (transX, transY, rotX, rotY, rotZ, scaleX, scaleY)
+def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     def WrapAngle(deg):
         return 180-((180-deg)%360)
-    def CalcPerspectiveCorrection(alpha, X, FOV=FOV):
-        alpha = WrapAngle(alpha)
-        if FOV is None:
-            return alpha
-        if 0 <= alpha <= 180:
-            costheta = (FOV*math.cos(alpha*math.pi/180.0)-X*math.sin(alpha*math.pi/180.0))/(FOV+max(2, abs(X)+1)*math.sin(alpha*math.pi/180.0))
-            try:
-                if costheta > 1:
-                    costheta = 1
-                    raise ValueError
-                elif costheta < -1:
-                    costheta = -1
-                    raise ValueError
-            except ValueError:
-                logging.error('Clipped rotation angle: (alpha=%s, X=%s), it is a bug!' % (alpha, X))
-            theta = math.acos(costheta)*180/math.pi
-        else:
-            costheta = (FOV*math.cos(alpha*math.pi/180.0)-X*math.sin(alpha*math.pi/180.0))/(FOV-max(2, abs(X)+1)*math.sin(alpha*math.pi/180.0))
-            try:
-                if costheta > 1:
-                    costheta = 1
-                    raise ValueError
-                elif costheta < -1:
-                    costheta = -1
-                    raise ValueError
-            except ValueError:
-                logging.error('Clipped rotation angle: (alpha=%s, X=%s), it is a bug!' % (alpha, X))
-            theta = -math.acos(costheta)*180/math.pi
-        return WrapAngle(theta)
-    X = 2*X-1
-    Y = 2*Y-1
     rotY = WrapAngle(rotY)
     rotZ = WrapAngle(rotZ)
+    if rotY in (90, -90):
+        rotY -= 1
     if rotY == 0 or rotZ == 0:
         outX = 0
         outY = -rotY  # Positive value means clockwise in Flash
         outZ = -rotZ
+        rotY *= math.pi/180.0
+        rotZ *= math.pi/180.0
     else:
-        rotY = rotY*math.pi/180.0
-        rotZ = rotZ*math.pi/180.0
+        rotY *= math.pi/180.0
+        rotZ *= math.pi/180.0
         outY = math.atan2(-math.sin(rotY)*math.cos(rotZ), math.cos(rotY))*180/math.pi
         outZ = math.atan2(-math.cos(rotY)*math.sin(rotZ), math.cos(rotZ))*180/math.pi
         outX = math.asin(math.sin(rotY)*math.sin(rotZ))*180/math.pi
-    if FOV is not None:
-        #outX = CalcPerspectiveCorrection(outX, -Y, FOV*0.75)
-        outY = CalcPerspectiveCorrection(outY, X, FOV)
-    return (WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), 0, round(-0.75*Y*math.sin(outY*math.pi/180.0), 3))
+    trX = (X*math.cos(rotZ)+Y*math.sin(rotZ))/math.cos(rotY)+(1-math.cos(rotZ)/math.cos(rotY))*width/2-math.sin(rotZ)/math.cos(rotY)*height/2
+    trY = Y*math.cos(rotZ)-X*math.sin(rotZ)+math.sin(rotZ)*width/2+(1-math.cos(rotZ))*height/2
+    trZ = (trX-width/2)*math.sin(rotY)
+    FOV = width*math.tan(2*math.pi/9.0)/2
+    scaleXY = FOV/(FOV+trZ)
+    if scaleXY < 0:
+        scaleXY = 1
+        logging.error('Clipped rotation: trZ == %.0f < %.0f' % (trZ, FOV));
+    trX = (trX-width/2)*scaleXY+width/2
+    trY = (trY-height/2)*scaleXY+height/2
+    return (round(trX), round(trY), WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), round(scaleXY*100), round(scaleXY*100))
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
@@ -686,7 +669,16 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, s
 
 
 def ASSEscape(s):
-    return '\\N'.join((i or ' ' for i in str(s).replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}').split('\n')))
+    def ReplaceLeadingSpace(s):
+        sstrip = s.strip(' ')
+        slen = len(s)
+        if slen == len(sstrip):
+            return s
+        else:
+            llen = slen-len(s.lstrip(' '))
+            rlen = slen-len(s.rstrip(' '))
+            return ''.join(('\u2007'*llen, sstrip, '\u2007'*rlen))
+    return '\\N'.join((ReplaceLeadingSpace(i) or ' ' for i in str(s).replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}').split('\n')))
 
 
 def CalculateLength(s):

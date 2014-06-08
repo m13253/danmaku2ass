@@ -15,14 +15,16 @@ extcode = 0
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    for rotY in range(0, 361):
-        for rotZ in range(0, 361):
-            outX, outY, outZ, shearX, shearY = danmaku2ass.ConvertFlashRotation(rotY, rotZ, X=0, Y=0, FOV=None)
-            logging.info('%4d, %4d => %4d, %4d, %4d' % (rotY, rotZ, outX, outY, outZ))
-            CompareMatrix(rotY, rotZ, outX, outY, outZ)
+    for Y in (120, 360):
+        for X in (160, 480):
+            for rotY in range(0, 361):
+                for rotZ in range(0, 361):
+                    trX, trY, outX, outY, outZ, scaleX, scaleY = danmaku2ass.ConvertFlashRotation(rotY, rotZ, X=X, Y=Y, width=640, height=480)
+                    logging.info('(%3d, %3d), %4d, %4d => %4d, %4d, %4d, %4d%%' % (X, Y, rotY, rotZ, outX, outY, outZ, scaleX))
+                    CompareMatrix(rotY, rotZ, outX, outY, outZ)
 
 def CompareMatrix(rotY, rotZ, outX, outY, outZ):
-    def ApproxEqual(a, b, e=0.01):
+    def ApproxEqual(a, b, e=0.015):
         assert e >= 0
         a_b = a-b
         if -e < a_b < e:
