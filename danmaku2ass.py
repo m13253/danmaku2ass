@@ -534,6 +534,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     FOV = width*math.tan(2*math.pi/9.0)/2
     scaleXY = FOV/(FOV+trZ)
     if scaleXY < 0:
+        scaleXY = 1
         logging.error('Clipped rotation: trZ == %.0f < %.0f' % (trZ, FOV));
     trX = (trX-width/2)*scaleXY+width/2
     trY = (trY-height/2)*scaleXY+height/2
