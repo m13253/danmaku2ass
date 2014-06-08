@@ -362,7 +362,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
 
     try:
         comment_args = c[3]
-        text = ASSEscape(str(comment_args['n']).replace('\r', '\n').replace('\r', '\n'))
+        text = ASSEscape(str(comment_args['n']).replace('\r', '\n'))
         common_styles = ['\org(%s, %s)' % (width//2, height//2)]
         anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
         if anchor != 7:
@@ -669,7 +669,16 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, s
 
 
 def ASSEscape(s):
-    return '\\N'.join((i or ' ' for i in str(s).replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}').split('\n')))
+    def ReplaceLeadingSpace(s):
+        sstrip = s.strip(' ')
+        slen = len(s)
+        if slen == len(sstrip):
+            return s
+        else:
+            llen = slen-len(s.lstrip(' '))
+            rlen = slen-len(s.rstrip(' '))
+            return ''.join(('\u2007'*llen, sstrip, '\u2007'*rlen))
+    return '\\N'.join((ReplaceLeadingSpace(i) or ' ' for i in str(s).replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}').split('\n')))
 
 
 def CalculateLength(s):
