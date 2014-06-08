@@ -24,7 +24,7 @@ def main():
                     CompareMatrix(rotY, rotZ, outX, outY, outZ)
 
 def CompareMatrix(rotY, rotZ, outX, outY, outZ):
-    def ApproxEqual(a, b, e=0.01):
+    def ApproxEqual(a, b, e=0.015):
         assert e >= 0
         a_b = a-b
         if -e < a_b < e:
