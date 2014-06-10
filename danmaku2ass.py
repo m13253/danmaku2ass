@@ -540,10 +540,14 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     trY = Y*math.cos(rotZ)-X*math.sin(rotZ)+math.sin(rotZ)*width/2+(1-math.cos(rotZ))*height/2
     trZ = (trX-width/2)*math.sin(rotY)
     FOV = width*math.tan(2*math.pi/9.0)/2
-    scaleXY = FOV/(FOV+trZ)
-    if scaleXY < 0:
+    try
+        scaleXY = FOV/(FOV+trZ)
+    except ZeroDivisionError:
+        logging.error('Rotation makes object behind the camera: trZ == %.0f' % trZ);
         scaleXY = 1
-        logging.error('Clipped rotation: trZ == %.0f < %.0f' % (trZ, FOV));
+    if scaleXY < 0:
+        scaleXY = -scaleXY
+        logging.error('Rotation makes object behind the camera: trZ == %.0f < %.0f' % (trZ, FOV));
     trX = (trX-width/2)*scaleXY+width/2
     trY = (trY-height/2)*scaleXY+height/2
     return (round(trX), round(trY), WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), round(scaleXY*100), round(scaleXY*100))
