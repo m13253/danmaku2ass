@@ -268,10 +268,10 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         from_y = comment_args.get(1, 0)
         to_x = comment_args.get(7, from_x)
         to_y = comment_args.get(8, from_y)
-        from_x = round(GetPosition(from_x, False))
-        from_y = round(GetPosition(from_y, True))
-        to_x = round(GetPosition(to_x, False))
-        to_y = round(GetPosition(to_y, True))
+        from_x = GetPosition(from_x, False)
+        from_y = GetPosition(from_y, True)
+        to_x = GetPosition(to_x, False)
+        to_y = GetPosition(to_y, True)
         alpha = safe_list(str(comment_args.get(2, '1')).split('-'))
         from_alpha = float(alpha.get(0, 1))
         to_alpha = float(alpha.get(1, from_alpha))
@@ -286,19 +286,19 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         isborder = comment_args.get(11, 'true')
         from_rotarg = ConvertFlashRotation(rotate_y, rotate_z, from_x, from_y, width, height)
         to_rotarg = ConvertFlashRotation(rotate_y, rotate_z, to_x, to_y, width, height)
-        styles = ['\\org(%s, %s)' % (width//2, height//2)]
+        styles = ['\\org(%d, %d)' % (width/2, height/2)]
         if from_rotarg[0:2] == to_rotarg[0:2]:
-            styles.append('\\pos(%s, %s)' % (from_rotarg[0:2]))
+            styles.append('\\pos(%.0f, %.0f)' % (from_rotarg[0:2]))
         else:
-            styles.append('\\move(%s, %s, %s, %s, %s, %s)' % (from_rotarg[0:2]+to_rotarg[0:2]+(delay, delay+duration)))
-        styles.append('\\frx%s\\fry%s\\frz%s\\fscx%s\\fscy%s' % (from_rotarg[2:7]))
+            styles.append('\\move(%.0f, %.0f, %.0f, %.0f, %.0f, %.0f)' % (from_rotarg[0:2]+to_rotarg[0:2]+(delay, delay+duration)))
+        styles.append('\\frx%.0f\\fry%.0f\\frz%.0f\\fscx%.0f\\fscy%.0f' % (from_rotarg[2:7]))
         if (from_x, from_y) != (to_x, to_y):
-            styles.append('\\t(%s, %s, ' % (delay, delay+duration))
-            styles.append('\\frx%s\\fry%s\\frz%s\\fscx%s\\fscy%s' % (to_rotarg[2:7]))
+            styles.append('\\t(%d, %d, ' % (delay, delay+duration))
+            styles.append('\\frx%.0f\\fry%.0f\\frz%.0f\\fscx%.0f\\fscy%.0f' % (to_rotarg[2:7]))
             styles.append(')')
         if fontface:
             styles.append('\\fn%s' % ASSEscape(fontface))
-        styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
+        styles.append('\\fs%.0f' % (c[6]*ZoomFactor[0]))
         if c[5] != 0xffffff:
             styles.append('\\c&H%02X%02X%02X&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
             if c[5] == 0x000000:
@@ -306,11 +306,11 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
         if from_alpha == to_alpha:
             styles.append('\\alpha&H%02X' % from_alpha)
         elif (from_alpha, to_alpha) == (255, 0):
-            styles.append('\\fad(%s,0)' % (lifetime*1000))
+            styles.append('\\fad(%.0f,0)' % (lifetime*1000))
         elif (from_alpha, to_alpha) == (0, 255):
-            styles.append('\\fad(0, %s)' % (lifetime*1000))
+            styles.append('\\fad(0, %.0f)' % (lifetime*1000))
         else:
-            styles.append('\\fade(%(from_alpha)s, %(to_alpha)s, %(to_alpha)s, 0, %(end_time)s, %(end_time)s, %(end_time)s)' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'end_time': lifetime*1000})
+            styles.append('\\fade(%(from_alpha)d, %(to_alpha)d, %(to_alpha)d, 0, %(end_time).0f, %(end_time).0f, %(end_time).0f)' % {'from_alpha': from_alpha, 'to_alpha': to_alpha, 'end_time': lifetime*1000})
         if isborder == 'false':
             styles.append('\\bord0')
         f.write('Dialogue: -1,%(start)s,%(end)s,%(styleid)s,,0,0,0,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
@@ -341,12 +341,12 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
                 scale_x = 1
             if scale_y is None:
                 scale_y = 1
-            styles.append('\\frx%s\\fry%s\\frz%s\\fscx%s\\fscy%s' % (rotarg[2:5]+(round(rotarg[5]*scale_x), round(rotarg[6]*scale_y))))
+            styles.append('\\frx%.0f\\fry%.0f\\frz%.0f\\fscx%.0f\\fscy%.0f' % (rotarg[2:5]+(rotarg[5]*scale_x, rotarg[6]*scale_y)))
         else:
             if scale_x is not None:
-                styles.append('\\fscx%s' % round(scale_x*100))
+                styles.append('\\fscx%.0f' % (scale_x*100))
             if scale_y is not None:
-                styles.append('\\fscy%s' % round(scale_y*100))
+                styles.append('\\fscy%.0f' % (scale_y*100))
         if color is not None:
             styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
             if color == 0x000000:
@@ -363,7 +363,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
     try:
         comment_args = c[3]
         text = ASSEscape(str(comment_args['n']).replace('\r', '\n'))
-        common_styles = ['\org(%s, %s)' % (width//2, height//2)]
+        common_styles = ['\org(%d, %d)' % (width/2, height/2)]
         anchor = {0: 7, 1: 8, 2: 9, 3: 4, 4: 5, 5: 6, 6: 1, 7: 2, 8: 3}.get(comment_args.get('c', 0), 7)
         if anchor != 7:
             common_styles.append('\\an%s' % anchor)
@@ -376,7 +376,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             fontbold = bool(font.get('b'))
             if fontbold:
                 common_styles.append('\\b1')
-        common_styles.append('\\fs%s' % round(c[6]*ZoomFactor[0]))
+        common_styles.append('\\fs%.0f' % (c[6]*ZoomFactor[0]))
         isborder = bool(comment_args.get('b', True))
         if not isborder:
             common_styles.append('\\bord0')
@@ -393,7 +393,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
         action_time = float(comment_args.get('l', 3.0))
         actions = list(comment_args.get('z', []))
         to_out_x, to_out_y, transform_styles = GetTransformStyles(to_x, to_y, to_scale_x, to_scale_y, to_rotate_z, to_rotate_y, to_color, to_alpha)
-        FlushCommentLine(f, text, common_styles+['\\pos(%s, %s)' % (to_out_x, to_out_y)]+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
+        FlushCommentLine(f, text, common_styles+['\\pos(%.0f, %.0f)' % (to_out_x, to_out_y)]+transform_styles, c[0]+from_time, c[0]+from_time+action_time, styleid)
         action_styles = transform_styles
         for action in actions:
             action = dict(action)
@@ -423,9 +423,9 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
                 to_rotate_y = float(action['e'])
             to_out_x, to_out_y, action_styles = GetTransformStyles(to_x, to_y, from_scale_x, from_scale_y, to_rotate_z, to_rotate_y, from_color, from_alpha)
             if (from_out_x, from_out_y) == (to_out_x, to_out_y):
-                pos_style = '\\pos(%s, %s)' % (to_out_x, to_out_y)
+                pos_style = '\\pos(%.0f, %.0f)' % (to_out_x, to_out_y)
             else:
-                pos_style = '\\move(%s, %s, %s, %s)' % (from_out_x, from_out_y, to_out_x, to_out_y)
+                pos_style = '\\move(%.0f, %.0f, %.0f, %.0f)' % (from_out_x, from_out_y, to_out_x, to_out_y)
             styles = common_styles+transform_styles
             styles.append(pos_style)
             if action_styles:
@@ -440,12 +440,12 @@ def WriteCommentSH5VPositioned(f, c, width, height, styleid):
     def GetTransformStyles(x=None, y=None, fsize=None, rotate_z=None, rotate_y=None, color=None, alpha=None):
         styles = []
         if x is not None and y is not None:
-            styles.append('\\pos(%s, %s)' % (x, y))
+            styles.append('\\pos(%.0f, %.0f)' % (x, y))
         if fsize is not None:
-            styles.append('\\fs%s' % fsize)
+            styles.append('\\fs%.0f' % fsize)
         if rotate_y is not None and rotate_z is not None:
-            styles.append('\\frz%s' % round(rotate_z))
-            styles.append('\\fry%s' % round(rotate_y))
+            styles.append('\\frz%.0f' % rotate_z)
+            styles.append('\\fry%.0f' % rotate_y)
         if color is not None:
             styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
             if color == 0x000000:
@@ -461,14 +461,14 @@ def WriteCommentSH5VPositioned(f, c, width, height, styleid):
 
     try:
         text = ASSEscape(str(c[3]))
-        to_x = round(float(c[9])*width)
-        to_y = round(float(c[10])*height)
+        to_x = float(c[9])*width
+        to_y = float(c[10])*height
         to_rotate_z = -int(c[14])
         to_rotate_y = -int(c[15])
         to_color = c[5]
         to_alpha = float(c[12])
         #Note: Alpha transition hasn't been worked out yet.
-        to_size = round(int(c[6])*math.sqrt(width*height/307200))
+        to_size = int(c[6])*math.sqrt(width*height/307200)
         #Note: Because sH5V's data is the absolute size of font,temporarily solve by it at present.[*math.sqrt(width/640*height/480)]
         #But it seems to be working fine...
         from_time = float(c[0])
@@ -542,7 +542,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
         logging.error('Rotation makes object behind the camera: trZ == %.0f < %.0f' % (trZ, FOV));
     trX = (trX-width/2)*scaleXY+width/2
     trY = (trY-height/2)*scaleXY+height/2
-    return (round(trX), round(trY), WrapAngle(round(outX)), WrapAngle(round(outY)), WrapAngle(round(outZ)), round(scaleXY*100), round(scaleXY*100))
+    return (trX, trY, WrapAngle(outX), WrapAngle(outY), WrapAngle(outZ), scaleXY*100, scaleXY*100)
 
 
 def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
@@ -656,15 +656,15 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, s
     text = ASSEscape(c[3])
     styles = []
     if c[4] == 1:
-        styles.append('\\an8\\pos(%(halfwidth)s, %(row)s)' % {'halfwidth': round(width/2), 'row': row})
+        styles.append('\\an8\\pos(%(halfwidth)d, %(row)d)' % {'halfwidth': width/2, 'row': row})
     elif c[4] == 2:
-        styles.append('\\an2\\pos(%(halfwidth)s, %(row)s)' % {'halfwidth': round(width/2), 'row': ConvertType2(row, height, bottomReserved)})
+        styles.append('\\an2\\pos(%(halfwidth)d, %(row)d)' % {'halfwidth': width/2, 'row': ConvertType2(row, height, bottomReserved)})
     elif c[4] == 3:
-        styles.append('\\move(%(neglen)s, %(row)s, %(width)s, %(row)s)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
+        styles.append('\\move(%(neglen)d, %(row)d, %(width)d, %(row)d)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
     else:
-        styles.append('\\move(%(width)s, %(row)s, %(neglen)s, %(row)s)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
+        styles.append('\\move(%(width)d, %(row)d, %(neglen)d, %(row)d)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
     if not (-1 < c[6]-fontsize < 1):
-        styles.append('\\fs%s' % round(c[6]))
+        styles.append('\\fs%.0f' % c[6])
     if c[5] != 0xffffff:
         styles.append('\\c&H%02X%02X%02X&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
         if c[5] == 0x000000:
