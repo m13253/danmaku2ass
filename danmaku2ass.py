@@ -532,7 +532,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     trY = Y*math.cos(rotZ)-X*math.sin(rotZ)+math.sin(rotZ)*width/2+(1-math.cos(rotZ))*height/2
     trZ = (trX-width/2)*math.sin(rotY)
     FOV = width*math.tan(2*math.pi/9.0)/2
-    try
+    try:
         scaleXY = FOV/(FOV+trZ)
     except ZeroDivisionError:
         logging.error('Rotation makes object behind the camera: trZ == %.0f' % trZ);
