@@ -300,7 +300,7 @@ def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
             styles.append('\\fn%s' % ASSEscape(fontface))
         styles.append('\\fs%.0f' % (c[6]*ZoomFactor[0]))
         if c[5] != 0xffffff:
-            styles.append('\\c&H%02X%02X%02X&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+            styles.append('\\c&H%s&' % ConvertColor(c[5]))
             if c[5] == 0x000000:
                 styles.append('\\3c&HFFFFFF&')
         if from_alpha == to_alpha:
@@ -348,7 +348,7 @@ def WriteCommentAcfunPositioned(f, c, width, height, styleid):
             if scale_y is not None:
                 styles.append('\\fscy%.0f' % (scale_y*100))
         if color is not None:
-            styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
+            styles.append('\\c&H%s&' % ConvertColor(color))
             if color == 0x000000:
                 styles.append('\\3c&HFFFFFF&')
         if alpha is not None:
@@ -447,7 +447,7 @@ def WriteCommentSH5VPositioned(f, c, width, height, styleid):
             styles.append('\\frz%.0f' % rotate_z)
             styles.append('\\fry%.0f' % rotate_y)
         if color is not None:
-            styles.append('\\c&H%02X%02X%02X&' % (color & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff))
+            styles.append('\\c&H%s&' % ConvertColor(color))
             if color == 0x000000:
                 styles.append('\\3c&HFFFFFF&')
         if alpha is not None:
@@ -637,11 +637,12 @@ def WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid):
 ; https://github.com/m13253/danmaku2ass
 Script Updated By: Danmaku2ASS (https://github.com/m13253/danmaku2ass)
 ScriptType: v4.00+
-WrapStyle: 2
-Collisions: Normal
 PlayResX: %(width)s
 PlayResY: %(height)s
+Collisions: Normal
+WrapStyle: 2
 ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.601  ; Danmaku2ASS already converted it
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
@@ -667,7 +668,7 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, s
     if not (-1 < c[6]-fontsize < 1):
         styles.append('\\fs%.0f' % c[6])
     if c[5] != 0xffffff:
-        styles.append('\\c&H%02X%02X%02X&' % (c[5] & 0xff, (c[5] >> 8) & 0xff, (c[5] >> 16) & 0xff))
+        styles.append('\\c&H%s&' % ConvertColor(c[5]))
         if c[5] == 0x000000:
             styles.append('\\3c&HFFFFFF&')
     f.write('Dialogue: 2,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
@@ -696,6 +697,25 @@ def ConvertTimestamp(timestamp):
     minute, second = divmod(minute, 6000)
     second, centsecond = divmod(second, 100)
     return '%d:%02d:%02d.%02d' % (int(hour), int(minute), int(second), int(centsecond))
+
+
+def ConvertColor(RGB, width=1280, height=576):
+    if RGB == 0x000000:
+        return '000000'
+    elif RGB == 0xffffff:
+        return 'FFFFFF'
+    R = (RGB >> 16) & 0xff
+    G = (RGB >> 8) & 0xff
+    B = RGB & 0xff
+    if width < 1280 and height < 576:
+        return '%02X%02X%02X' % (B, G, R)
+    else:  # VobSub always uses BT.601 colorspace, convert to BT.709
+        ClipByte = lambda x: 255 if x > 255 else 0 if x < 0 else x;
+        return '%02X%02X%02X' % (
+            ClipByte(R*0.00956384088080656+G*0.03217254540203729+B*0.95826361371715607),
+            ClipByte(R*-0.10493933142075390+G*1.17231478191855154+B*-0.06737545049779757),
+            ClipByte(R*0.91348912373987645+G*0.07858536372532510+B*0.00792551253479842)
+        )
 
 
 def ConvertType2(row, height, bottomReserved):
