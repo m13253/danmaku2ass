@@ -507,7 +507,8 @@ def GetZoomFactor(SourceSize, TargetSize):
 
 # Calculation is based on https://github.com/jabbany/CommentCoreLibrary/issues/5#issuecomment-40087282
 #                     and https://github.com/m13253/danmaku2ass/issues/7#issuecomment-41489422
-# FOV = 1.0/math.tan(100*math.pi/360.0)
+# Flash FOV = width*2.0/math.tan(100*math.pi/360.0)
+# But ASS FOV = width*4/3.0 will be used instead
 # Result: (transX, transY, rotX, rotY, rotZ, scaleX, scaleY)
 def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     def WrapAngle(deg):
@@ -531,7 +532,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     trX = (X*math.cos(rotZ)+Y*math.sin(rotZ))/math.cos(rotY)+(1-math.cos(rotZ)/math.cos(rotY))*width/2-math.sin(rotZ)/math.cos(rotY)*height/2
     trY = Y*math.cos(rotZ)-X*math.sin(rotZ)+math.sin(rotZ)*width/2+(1-math.cos(rotZ))*height/2
     trZ = (trX-width/2)*math.sin(rotY)
-    FOV = width*math.tan(2*math.pi/9.0)/2
+    FOV = width*4/3.0
     try:
         scaleXY = FOV/(FOV+trZ)
     except ZeroDivisionError:
