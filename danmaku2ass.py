@@ -508,7 +508,7 @@ def GetZoomFactor(SourceSize, TargetSize):
 # Calculation is based on https://github.com/jabbany/CommentCoreLibrary/issues/5#issuecomment-40087282
 #                     and https://github.com/m13253/danmaku2ass/issues/7#issuecomment-41489422
 # ASS FOV = width*4/3.0
-# But Flash FOV = width*2.0/math.tan(100*math.pi/360.0) will be used instead
+# But Flash FOV = width/math.tan(100*math.pi/360.0)/2 will be used instead
 # Result: (transX, transY, rotX, rotY, rotZ, scaleX, scaleY)
 def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     def WrapAngle(deg):
