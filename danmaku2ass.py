@@ -720,7 +720,7 @@ def ConvertColor(RGB, width=1280, height=576):
     if width < 1280 and height < 576:
         return '%02X%02X%02X' % (B, G, R)
     else:  # VobSub always uses BT.601 colorspace, convert to BT.709
-        ClipByte = lambda x: 255 if x > 255 else 0 if x < 0 else x;
+        ClipByte = lambda x: 255 if x > 255 else 0 if x < 0 else round(x);
         return '%02X%02X%02X' % (
             ClipByte(R*0.00956384088080656+G*0.03217254540203729+B*0.95826361371715607),
             ClipByte(R*-0.10493933142075390+G*1.17231478191855154+B*-0.06737545049779757),
