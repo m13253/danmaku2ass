@@ -639,8 +639,8 @@ def WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid):
 ; https://github.com/m13253/danmaku2ass
 Script Updated By: Danmaku2ASS (https://github.com/m13253/danmaku2ass)
 ScriptType: v4.00+
-PlayResX: %(width)s
-PlayResY: %(height)s
+PlayResX: %(width)d
+PlayResY: %(height)d
 Collisions: Normal
 WrapStyle: 2
 ScaledBorderAndShadow: yes
@@ -648,11 +648,11 @@ YCbCr Matrix: TV.601  ; Danmaku2ASS already converted it
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: %(styleid)s, %(fontface)s, %(fontsize)s, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, %(outline)s, 0, 7, 0, 0, 0, 0
+Style: %(styleid)s, %(fontface)s, %(fontsize).0f, &H%(alpha)02XFFFFFF, &H%(alpha)02XFFFFFF, &H%(alpha)02X000000, &H%(alpha)02X000000, 0, 0, 0, 0, 100, 100, 0.00, 0.00, 1, %(outline).0f, 0, 7, 0, 0, 0, 0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': round(fontsize), 'alpha': 255-round(alpha*255), 'outline': round(fontsize/25), 'styleid': styleid}
+''' % {'width': width, 'height': height, 'fontface': fontface, 'fontsize': fontsize, 'alpha': 255-round(alpha*255), 'outline': min(fontsize/25.0, 1), 'styleid': styleid}
     )
 
 
