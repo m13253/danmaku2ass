@@ -808,6 +808,7 @@ def GetCommentProcessor(input_file):
 
 
 def main():
+    logging.basicConfig(format='%(levelname)s: %(message)s')
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
