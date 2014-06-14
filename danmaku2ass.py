@@ -641,6 +641,7 @@ Script Updated By: Danmaku2ASS (https://github.com/m13253/danmaku2ass)
 ScriptType: v4.00+
 PlayResX: %(width)d
 PlayResY: %(height)d
+Aspect Ratio: %(width)d:%(height)d
 Collisions: Normal
 WrapStyle: 2
 ScaledBorderAndShadow: yes
