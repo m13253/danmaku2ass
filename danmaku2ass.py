@@ -475,10 +475,10 @@ def WriteCommentSH5VPositioned(f, c, width, height, styleid):
         to_rotate_y = -int(c[15])
         to_color = c[5]
         to_alpha = float(c[12])
-        #Note: Alpha transition hasn't been worked out yet.
+        # Note: Alpha transition hasn't been worked out yet.
         to_size = int(c[6])*math.sqrt(width*height/307200)
-        #Note: Because sH5V's data is the absolute size of font,temporarily solve by it at present.[*math.sqrt(width/640*height/480)]
-        #But it seems to be working fine...
+        # Note: Because sH5V's data is the absolute size of font,temporarily solve by it at present.[*math.sqrt(width/640*height/480)]
+        # But it seems to be working fine...
         from_time = float(c[0])
         action_time = float(c[11])/1000
         transform_styles = GetTransformStyles(to_x, to_y, to_size, to_rotate_z, to_rotate_y, to_color, to_alpha)
@@ -520,7 +520,7 @@ def GetZoomFactor(SourceSize, TargetSize):
 # Result: (transX, transY, rotX, rotY, rotZ, scaleX, scaleY)
 def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     def WrapAngle(deg):
-        return 180-((180-deg)%360)
+        return 180-((180-deg) % 360)
     rotY = WrapAngle(rotY)
     rotZ = WrapAngle(rotZ)
     if rotY in (90, -90):
@@ -544,7 +544,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     try:
         scaleXY = FOV/(FOV+trZ)
     except ZeroDivisionError:
-        logging.error('Rotation makes object behind the camera: trZ == %.0f' % trZ);
+        logging.error('Rotation makes object behind the camera: trZ == %.0f' % trZ)
         scaleXY = 1
     trX = (trX-width/2)*scaleXY+width/2
     trY = (trY-height/2)*scaleXY+height/2
@@ -552,7 +552,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
         scaleXY = -scaleXY
         outX += 180
         outY += 180
-        logging.error('Rotation makes object behind the camera: trZ == %.0f < %.0f' % (trZ, FOV));
+        logging.error('Rotation makes object behind the camera: trZ == %.0f < %.0f' % (trZ, FOV))
     return (trX, trY, WrapAngle(outX), WrapAngle(outY), WrapAngle(outZ), scaleXY*100, scaleXY*100)
 
 
@@ -721,7 +721,7 @@ def ConvertColor(RGB, width=1280, height=576):
     if width < 1280 and height < 576:
         return '%02X%02X%02X' % (B, G, R)
     else:  # VobSub always uses BT.601 colorspace, convert to BT.709
-        ClipByte = lambda x: 255 if x > 255 else 0 if x < 0 else round(x);
+        ClipByte = lambda x: 255 if x > 255 else 0 if x < 0 else round(x)
         return '%02X%02X%02X' % (
             ClipByte(R*0.00956384088080656+G*0.03217254540203729+B*0.95826361371715607),
             ClipByte(R*-0.10493933142075390+G*1.17231478191855154+B*-0.06737545049779757),
