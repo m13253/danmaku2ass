@@ -645,7 +645,7 @@ Aspect Ratio: %(width)d:%(height)d
 Collisions: Normal
 WrapStyle: 2
 ScaledBorderAndShadow: yes
-YCbCr Matrix: TV.601  ; Danmaku2ASS already converted it
+YCbCr Matrix: TV.601
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
