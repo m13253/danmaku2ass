@@ -8,6 +8,10 @@
 # This program comes with no warranty, the author will not be resopnsible for
 # any damage or problems caused by this program.
 
+# You can obtain a latest copy of Danmaku2ASS at:
+#   https://github.com/m13253/danmaku2ass
+# Please update to the latest version before complaining.
+
 from __future__ import unicode_literals
 from __future__ import with_statement
 from __future__ import division
