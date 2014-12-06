@@ -627,7 +627,7 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
 
 def FindAlternativeRow(rows, c, height, bottomReserved):
     res = 0
-    for row in xrange(height-bottomReserved-math.ceil(c[7])):
+    for row in xrange(height-bottomReserved-int(math.ceil(c[7]))):
         if not rows[c[4]][row]:
             return row
         elif rows[c[4]][row][0] < rows[c[4]][res][0]:
