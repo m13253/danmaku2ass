@@ -560,7 +560,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     return (trX, trY, WrapAngle(outX), WrapAngle(outY), WrapAngle(outZ), scaleXY*100, scaleXY*100)
 
 
-def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, lifetime, reduced, progress_callback):
+def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, duration_marquee, duration_still, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
     rows = [[None]*(height-bottomReserved+1) for i in xrange(4)]
@@ -571,10 +571,10 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
             row = 0
             rowmax = height-bottomReserved-i[7]
             while row <= rowmax:
-                freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, lifetime)
+                freerows = TestFreeRows(rows, i, row, width, height, bottomReserved, duration_marquee, duration_still)
                 if freerows >= i[7]:
                     MarkCommentRow(rows, i, row)
-                    WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
+                    WriteComment(f, i, row, width, height, bottomReserved, fontsize, duration_marquee, duration_still, styleid)
                     break
                 else:
                     row += freerows or 1
@@ -582,7 +582,7 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
                 if not reduced:
                     row = FindAlternativeRow(rows, i, height, bottomReserved)
                     MarkCommentRow(rows, i, row)
-                    WriteComment(f, i, row, width, height, bottomReserved, fontsize, lifetime, styleid)
+                    WriteComment(f, i, row, width, height, bottomReserved, fontsize, duration_marquee, duration_still, styleid)
         elif i[4] == 'bilipos':
             WriteCommentBilibiliPositioned(f, i, width, height, styleid)
         elif i[4] == 'acfunpos':
@@ -595,7 +595,7 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
         progress_callback(len(comments), len(comments))
 
 
-def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
+def TestFreeRows(rows, c, row, width, height, bottomReserved, duration_marquee, duration_still):
     res = 0
     rowmax = height-bottomReserved
     targetRow = None
@@ -603,20 +603,20 @@ def TestFreeRows(rows, c, row, width, height, bottomReserved, lifetime):
         while row < rowmax and res < c[7]:
             if targetRow != rows[c[4]][row]:
                 targetRow = rows[c[4]][row]
-                if targetRow and targetRow[0]+lifetime > c[0]:
+                if targetRow and targetRow[0]+duration_still > c[0]:
                     break
             row += 1
             res += 1
     else:
         try:
-            thresholdTime = c[0]-lifetime*(1-width/(c[8]+width))
+            thresholdTime = c[0]-duration_marquee*(1-width/(c[8]+width))
         except ZeroDivisionError:
-            thresholdTime = c[0]-lifetime
+            thresholdTime = c[0]-duration_marquee
         while row < rowmax and res < c[7]:
             if targetRow != rows[c[4]][row]:
                 targetRow = rows[c[4]][row]
                 try:
-                    if targetRow and (targetRow[0] > thresholdTime or targetRow[0]+targetRow[8]*lifetime/(targetRow[8]+width) > c[0]):
+                    if targetRow and (targetRow[0] > thresholdTime or targetRow[0]+targetRow[8]*duration_marquee/(targetRow[8]+width) > c[0]):
                         break
                 except ZeroDivisionError:
                     pass
@@ -669,24 +669,28 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     )
 
 
-def WriteComment(f, c, row, width, height, bottomReserved, fontsize, lifetime, styleid):
+def WriteComment(f, c, row, width, height, bottomReserved, fontsize, duration_marquee, duration_still, styleid):
     text = ASSEscape(c[3])
     styles = []
     if c[4] == 1:
         styles.append('\\an8\\pos(%(halfwidth)d, %(row)d)' % {'halfwidth': width/2, 'row': row})
+        duration = duration_still
     elif c[4] == 2:
         styles.append('\\an2\\pos(%(halfwidth)d, %(row)d)' % {'halfwidth': width/2, 'row': ConvertType2(row, height, bottomReserved)})
+        duration = duration_still
     elif c[4] == 3:
         styles.append('\\move(%(neglen)d, %(row)d, %(width)d, %(row)d)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
+        duration = duration_marquee
     else:
         styles.append('\\move(%(width)d, %(row)d, %(neglen)d, %(row)d)' % {'width': width, 'row': row, 'neglen': -math.ceil(c[8])})
+        duration = duration_marquee
     if not (-1 < c[6]-fontsize < 1):
         styles.append('\\fs%.0f' % c[6])
     if c[5] != 0xffffff:
         styles.append('\\c&H%s&' % ConvertColor(c[5]))
         if c[5] == 0x000000:
             styles.append('\\3c&HFFFFFF&')
-    f.write('Dialogue: 2,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+lifetime), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
+    f.write('Dialogue: 2,%(start)s,%(end)s,%(styleid)s,,0000,0000,0000,,{%(styles)s}%(text)s\n' % {'start': ConvertTimestamp(c[0]), 'end': ConvertTimestamp(c[0]+duration), 'styles': ''.join(styles), 'text': text, 'styleid': styleid})
 
 
 def ASSEscape(s):
@@ -770,7 +774,7 @@ def export(func):
 
 
 @export
-def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, comment_duration=5.0, is_reduce_comments=False, progress_callback=None):
+def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, is_reduce_comments=False, progress_callback=None):
     fo = None
     comments = ReadComments(input_files, font_size)
     try:
@@ -778,7 +782,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
             fo = ConvertToFile(output_file, 'w', encoding='utf-8-sig', errors='replace', newline='\r\n')
         else:
             fo = sys.stdout
-        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opacity, comment_duration, is_reduce_comments, progress_callback)
+        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opacity, duration_marquee, duration_still, is_reduce_comments, progress_callback)
     finally:
         if output_file and fo != output_file:
             fo.close()
@@ -822,7 +826,8 @@ def main():
     parser.add_argument(b'-fn', b'--font', metavar=_(b'FONT'), help=_(b'Specify font face [default: %s]') % _(b'(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
     parser.add_argument(b'-fs', b'--fontsize', metavar=_(b'SIZE'), help=(_(b'Default font size [default: %s]') % 25), type=float, default=25.0)
     parser.add_argument(b'-a', b'--alpha', metavar=_(b'ALPHA'), help=_(b'Text opacity'), type=float, default=1.0)
-    parser.add_argument(b'-l', b'--lifetime', metavar=_(b'SECONDS'), help=_(b'Duration of comment display [default: %s]') % 5, type=float, default=5.0)
+    parser.add_argument(b'-dm', b'--duration-marquee', metavar=_(b'SECONDS'), help=_(b'Duration of scrolling comment display [default: %s]') % 5, type=float, default=5.0)
+    parser.add_argument(b'-ds', b'--duration-still', metavar=_(b'SECONDS'), help=_(b'Duration of still comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument(b'-p', b'--protect', metavar=_(b'HEIGHT'), help=_(b'Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument(b'-r', b'--reduce', action=b'store_true', help=_(b'Reduce the amount of comments if stage is full'))
     parser.add_argument(b'file', metavar=_(b'FILE'), nargs=b'+', help=_(b'Comment file to be processed'))
@@ -833,7 +838,7 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
-    Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.lifetime, args.reduce)
+    Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
 
 
 if __name__ == '__main__':

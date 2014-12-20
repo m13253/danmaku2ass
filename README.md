@@ -19,7 +19,7 @@ Example usage
 -------------
 
 ```sh
-./danmaku2ass -o foo.ass -s 1920x1080 -fn "MS PGothic" -fs 48 -a 0.8 -l 5 foo.xml
+./danmaku2ass -o foo.ass -s 1920x1080 -fn "MS PGothic" -fs 48 -a 0.8 -dm 5 -ds 5 foo.xml
 ```
 
 Name the output file with same basename but different extension (.ass) as the video. Put them into the same directory and most media players will automatically load them. For MPlayer, you will have to specify `-ass` option.
@@ -42,7 +42,7 @@ Command line reference
 
 ```
 usage: danmaku2ass.py [-h] [-o OUTPUT] -s WIDTHxHEIGHT [-fn FONT] [-fs SIZE]
-                      [-a ALPHA] [-l SECONDS] [-p HEIGHT] [-r]
+                      [-a ALPHA] [-dm SECONDS] [-ds SECONDS] [-p HEIGHT] [-r]
                       FILE [FILE ...]
 
 positional arguments:
@@ -55,13 +55,15 @@ optional arguments:
   -s WIDTHxHEIGHT, --size WIDTHxHEIGHT
                         Stage size in pixels
   -fn FONT, --font FONT
-                        Specify font face [default: sans-serif]
+                        Specify font face [default: Helvetica]
   -fs SIZE, --fontsize SIZE
                         Default font size [default: 25]
   -a ALPHA, --alpha ALPHA
                         Text opacity
-  -l SECONDS, --lifetime SECONDS
-                        Duration of comment display [default: 5]
+  -dm SECONDS, --duration-marquee SECONDS
+                        Duration of scrolling comment display [default: 5]
+  -ds SECONDS, --duration-still SECONDS
+                        Duration of still comment display [default: 5]
   -p HEIGHT, --protect HEIGHT
                         Reserve blank on the bottom of the stage
   -r, --reduce          Reduce the amount of comments if stage is full
