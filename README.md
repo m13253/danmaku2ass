@@ -20,7 +20,7 @@ Players for a specific site
 
 If you prefer to watch videos on a specific site listed below with a media player, you can check these projects:
 
-- Bilibili.tv: [BiliDan](https://github.com/m13253/BiliDan), (MPV Player, Linux, OS X), officially supported by Danmaku2ASS contributer
+- Bilibili.tv: [BiliDan](https://github.com/m13253/BiliDan), (MPV Player, Linux, OS X, Windows), officially supported by Danmaku2ASS contributer
 - Bilibili.tv: [BiliGui](https://github.com/marguerite/BiliGui), (MPV Player, Ruby, Qt4, Linux)
 - Bilibili.tv: [Biligrab-Lite](https://github.com/cnbeining/Biligrab), (Aria2, Python2, OS X)
 
