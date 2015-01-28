@@ -808,47 +808,10 @@ def GetCommentProcessor(input_file):
     return CommentFormatMap[ProbeCommentFormat(input_file)]
 
 
-# Useful for users wanting to understand how the comment sys works
-@export
-def show_rcp():
-    print("")
-    print(" ReadComments**** protocol")
-    print("")
-    print(" Input:")
-    print("     f:         Input file")
-    print("     fontsize:  Default font size")
-    print("")
-    print(" Output:")
-    print("     yield a tuple:")
-    print("         (timeline, timestamp, no, comment, pos, color, size, height, width)")
-    print("     timeline:  The position when the comment is replayed")
-    print("     timestamp: The UNIX timestamp when the comment is submitted")
-    print("     no:        A sequence of 1, 2, 3, ..., used for sorting")
-    print("     comment:   The content of the comment")
-    print("     pos:       0 for regular moving comment,")
-    print("                1 for bottom centered comment,")
-    print("                2 for top centered comment,")
-    print("                3 for reversed moving comment")
-    print("     color:     Font color represented in 0xRRGGBB,")
-    print("                e.g. 0xffffff for white")
-    print("     size:      Font size")
-    print("     height:    The estimated height in pixels")
-    print("                i.e. (comment.count(\'\\n\')+1)*size")
-    print("     width:     The estimated width in pixels")
-    print("                i.e. CalculateLength(comment)*size")
-    print("")
-    print(" After implementing ReadComments****, make sure to update ProbeCommentFormat")
-    print(" and CommentFormatMap.")
-    print("")
-
-
 def main():
     logging.basicConfig(format='%(levelname)s: %(message)s')
     if len(sys.argv) == 1:
         sys.argv.append('--help')
-    elif sys.argv[1] in ('-rcp', '--show-rcp'):
-        show_rcp()
-        sys.exit(0)
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
@@ -859,7 +822,6 @@ def main():
     parser.add_argument('-ds', '--duration-still', metavar=_('SECONDS'), help=_('Duration of still comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
-    parser.add_argument('-rcp', '--show-rcp', action='store_true', help=_('Show ReadComments**** protocol'))
     parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))
     args = parser.parse_args()
     try:
