@@ -87,7 +87,11 @@ def ProbeCommentFormat(f):
             elif tmp == 'xml version="1.0" encoding="Utf-8"?>\n<':
                 return 'Bilibili'  # Komica, with the same file format as Bilibili
             elif tmp == 'xml version="1.0" encoding="UTF-8"?>\n<':
-                return 'MioMio'
+                tmp = f.read(20)
+                if tmp == '!-- BoonSutazioData=':
+                    return 'Niconico'  # Niconico videos downloaded with NicoFox
+                else:
+                    return 'MioMio'
         elif tmp == 'p':
             return 'Niconico'  # Himawari Douga, with the same file format as Niconico Douga
 
