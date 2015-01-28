@@ -44,7 +44,7 @@ If you prefer to watch videos on a specific site listed below with a media playe
 
 - Bilibili.tv: [BiliDan](https://github.com/m13253/BiliDan), (MPV Player, FFmpeg, Linux, OS X, (unstable on) Windows), officially supported by Danmaku2ASS contributer
 - Bilibili.tv: [BiliGui](https://github.com/marguerite/BiliGui), (MPV Player, Ruby, Qt4, FFmpeg, Linux)
-- Bilibili.tv: [Biligrab-Lite](https://github.com/cnbeining/Biligrab), (Aria2, Python2, FFmpeg, OS X, (unstable on) Linux)
+- Bilibili.tv: [Biligrab](https://github.com/cnbeining/Biligrab), (Aria2, Python2, FFmpeg, OS X, (unstable on) Linux)
 
 Please [submit your work](https://github.com/m13253/danmaku2ass/issues) if you have made a better one!
 
