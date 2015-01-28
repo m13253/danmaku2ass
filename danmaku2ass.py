@@ -119,7 +119,7 @@ def ProbeCommentFormat(f):
 #
 
 
-def ReadCommentsNiconico(f, fontsize):
+def ReadCommentsNiconico(f, fontsize, coef_moving, coef_big, coef_small):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffcc00, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000, 'niconicowhite': 0xcccc99, 'white2': 0xcccc99, 'truered': 0xcc0033, 'red2': 0xcc0033, 'passionorange': 0xff6600, 'orange2': 0xff6600, 'madyellow': 0x999900, 'yellow2': 0x999900, 'elementalgreen': 0x00cc66, 'green2': 0x00cc66, 'marineblue': 0x33ffcc, 'blue2': 0x33ffcc, 'nobleviolet': 0x6633cc, 'purple2': 0x6633cc}
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('chat')
@@ -130,16 +130,18 @@ def ReadCommentsNiconico(f, fontsize):
                 continue  # ignore advanced comments
             pos = 0
             color = 0xffffff
-            size = fontsize
+            size = fontsize * coef_moving
             for mailstyle in str(comment.getAttribute('mail')).split():
                 if mailstyle == 'ue':
                     pos = 1
+                    size = fontsize * 1
                 elif mailstyle == 'shita':
                     pos = 2
+                    size = fontsize * 1
                 elif mailstyle == 'big':
-                    size = fontsize*1.44
+                    size = fontsize * coef_big
                 elif mailstyle == 'small':
-                    size = fontsize*0.64
+                    size = fontsize * coef_small
                 elif mailstyle in NiconicoColorMap:
                     color = NiconicoColorMap[mailstyle]
             yield (max(int(comment.getAttribute('vpos')), 0)*0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n')+1)*size, CalculateLength(c)*size)
@@ -148,7 +150,7 @@ def ReadCommentsNiconico(f, fontsize):
             continue
 
 
-def ReadCommentsAcfun(f, fontsize):
+def ReadCommentsAcfun(f, fontsize, coef_moving, coef_big, coef_small):
     comment_element = json.load(f)
     for i, comment in enumerate(comment_element):
         try:
@@ -167,7 +169,7 @@ def ReadCommentsAcfun(f, fontsize):
             continue
 
 
-def ReadCommentsBilibili(f, fontsize):
+def ReadCommentsBilibili(f, fontsize, coef_moving, coef_big, coef_small):
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('d')
     for i, comment in enumerate(comment_element):
@@ -187,7 +189,7 @@ def ReadCommentsBilibili(f, fontsize):
             continue
 
 
-def ReadCommentsTudou(f, fontsize):
+def ReadCommentsTudou(f, fontsize, coef_moving, coef_big, coef_small):
     comment_element = json.load(f)
     for i, comment in enumerate(comment_element['comment_list']):
         try:
@@ -201,7 +203,7 @@ def ReadCommentsTudou(f, fontsize):
             continue
 
 
-def ReadCommentsMioMio(f, fontsize):
+def ReadCommentsMioMio(f, fontsize, coef_moving, coef_big, coef_small):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
     dom = xml.dom.minidom.parse(f)
     comment_element = dom.getElementsByTagName('data')
@@ -217,7 +219,7 @@ def ReadCommentsMioMio(f, fontsize):
             continue
 
 
-def ReadCommentsSH5V(f, fontsize):
+def ReadCommentsSH5V(f, fontsize, coef_moving, coef_big, coef_small):
     comment_element = json.load(f)
     for i, comment in enumerate(comment_element["root"]["bgs"]):
         try:
@@ -770,9 +772,10 @@ def export(func):
 
 
 @export
-def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, is_reduce_comments=False, progress_callback=None):
+def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, coef_moving=2.0
+                , coef_big=1.44, coef_small=0.64, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, is_reduce_comments=False, progress_callback=None):
     fo = None
-    comments = ReadComments(input_files, font_size)
+    comments = ReadComments(input_files, font_size, coef_moving, coef_big, coef_small)
     try:
         if output_file:
             fo = ConvertToFile(output_file, 'w', encoding='utf-8-sig', errors='replace', newline='\r\n')
@@ -784,8 +787,9 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
             fo.close()
 
 
+#[Need Help] args added, will it breaks the code of progress_callback???
 @export
-def ReadComments(input_files, font_size=25.0, progress_callback=None):
+def ReadComments(input_files, font_size=25.0, coef_moving=2.0, coef_big=1.44, coef_small=0.64, progress_callback=None):
     if isinstance(input_files, bytes):
         input_files = str(bytes(input_files).decode('utf-8', 'replace'))
     if isinstance(input_files, str):
@@ -800,7 +804,7 @@ def ReadComments(input_files, font_size=25.0, progress_callback=None):
             CommentProcessor = GetCommentProcessor(f)
             if not CommentProcessor:
                 raise ValueError(_('Unknown comment file format: %s') % i)
-            comments.extend(CommentProcessor(FilterBadChars(f), font_size))
+            comments.extend(CommentProcessor(FilterBadChars(f), font_size, coef_moving, coef_big, coef_small))
     if progress_callback:
         progress_callback(len(input_files), len(input_files))
     comments.sort()
@@ -821,6 +825,8 @@ def main():
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
     parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face [default: %s]') % _('(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
     parser.add_argument('-fs', '--fontsize', metavar=_('SIZE'), help=(_('Default font size [default: %s]') % 25), type=float, default=25.0)
+    parser.add_argument('-coef', '--fontsize-coef', metavar=_('MOVING+BIG+SMALL')
+                        , help=_('[Niconico] Default font size coefficient for moving, big and small comment [default: %s]') % _('2+1.44+0.64'), default=_('2+1.44+0.64'))
     parser.add_argument('-a', '--alpha', metavar=_('ALPHA'), help=_('Text opacity'), type=float, default=1.0)
     parser.add_argument('-dm', '--duration-marquee', metavar=_('SECONDS'), help=_('Duration of scrolling comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-ds', '--duration-still', metavar=_('SECONDS'), help=_('Duration of still comment display [default: %s]') % 5, type=float, default=5.0)
@@ -834,7 +840,17 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
-    Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
+
+    try:
+        coef_moving, coef_big, coef_small = str(args.fontsize_coef).split('+', 2)
+        coef_moving = float(coef_moving)
+        coef_big = float(coef_big)
+        coef_small = float(coef_small)
+    except ValueError:
+        raise ValueError(_('Invalid font size coefficient: %r') % args.fontsize_coef)
+    
+    Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, coef_moving
+                , coef_big, coef_small, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
 
 
 if __name__ == '__main__':
