@@ -15,6 +15,17 @@ First, you will have to get the XML or JSON file from Niconico/Acfun/Bilibili, m
 
 Then, execute `danmaku2ass`. You can see further instructions below.
 
+Players for a specific site
+---------------------------
+
+If you prefer to watch videos on a specific site listed below with a media player, you can check these projects:
+
+- Bilibili.tv [BiliDan](https://github.com/m13253/BiliDan), MPV Player, officially supported by Danmaku2ASS contributer
+- Bilibili.tv [BiliGui](https://github.com/marguerite/BiliGui), MPV Player, Ruby, Qt4
+- Bilibili.tv [Biligrab-Lite](https://github.com/cnbeining/Biligrab), Python2
+
+Please [submit your work](https://github.com/m13253/danmaku2ass/issues) if you have made a better one!
+
 Example usage
 -------------
 
