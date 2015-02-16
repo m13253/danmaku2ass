@@ -182,11 +182,13 @@ def ReadCommentsBilibili(f, fontsize):
         try:
             p = str(comment.getAttribute('p')).split(',')
             assert len(p) >= 5
-            assert p[1] in ('1', '4', '5', '6', '7')
+            assert p[1] in ('1', '4', '5', '6', '7', '8')
             if p[1] != '7':
                 c = str(comment.childNodes[0].wholeText).replace('/n', '\n')
                 size = int(p[2])*fontsize/25.0
                 yield (float(p[0]), int(p[4]), i, c, {'1': 0, '4': 2, '5': 1, '6': 3}[p[1]], int(p[3]), size, (c.count('\n')+1)*size, CalculateLength(c)*size)
+            elif p[1] == '8':
+                pass  # ignore scripted comment
             else:  # positioned comment
                 c = str(comment.childNodes[0].wholeText)
                 yield (float(p[0]), int(p[4]), i, c, 'bilipos', int(p[3]), int(p[2]), 0, 0)
