@@ -52,12 +52,12 @@ msgstr "字型"
 #: danmaku2ass.py:818
 #, python-format
 msgid "Specify font face [default: %s]"
-msgstr "指定字型名稱 [默認: %s]"
+msgstr "指定字型名稱 [預設: %s]"
 
 #: danmaku2ass.py:819
 #, python-format
 msgid "Default font size [default: %s]"
-msgstr "默認字型大小 [默認: %s]"
+msgstr "預設字型大小 [預設: %s]"
 
 #: danmaku2ass.py:819
 msgid "SIZE"
@@ -74,7 +74,7 @@ msgstr "文字不透明度"
 #: danmaku2ass.py:821
 #, python-format
 msgid "Duration of scrolling comment display [default: %s]"
-msgstr "滾動彈幕顯示時長 [默認: %s]"
+msgstr "滾動彈幕顯示時長 [預設: %s]"
 
 #: danmaku2ass.py:821 danmaku2ass.py:822
 msgid "SECONDS"
@@ -83,7 +83,7 @@ msgstr "秒數"
 #: danmaku2ass.py:822
 #, python-format
 msgid "Duration of still comment display [default: %s]"
-msgstr "靜止彈幕顯示時長 [默認: %s]"
+msgstr "靜止彈幕顯示時長 [預設: %s]"
 
 #: danmaku2ass.py:823
 msgid "HEIGHT"
