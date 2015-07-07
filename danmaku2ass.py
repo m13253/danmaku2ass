@@ -150,6 +150,8 @@ def ReadCommentsNiconico(f, fontsize):
 
 def ReadCommentsAcfun(f, fontsize):
     comment_element = json.load(f)
+    # after load acfun comment json file as python list, flatten the list
+    comment_element = [c for sublist in comment_element for c in sublist]
     for i, comment in enumerate(comment_element):
         try:
             p = str(comment['c']).split(',')
