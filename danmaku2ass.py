@@ -37,7 +37,7 @@ if not ((2, 7) <= sys.version_info < (3,)):
 
 bytes, str = str, unicode
 
-gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0] or 'locale'))), 'locale'))
+gettext.install('danmaku2ass', os.path.join(os.path.dirname(os.path.abspath(os.path.realpath(sys.argv[0].encode() or 'locale'))), 'locale'))
 
 
 def SeekZero(function):
