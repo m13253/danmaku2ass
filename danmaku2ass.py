@@ -816,6 +816,17 @@ def GetCommentProcessor(input_file):
     return CommentFormatMap[ProbeCommentFormat(input_file)]
 
 
+def bomcheck(filebomcheck):
+    BOM = b'\xef\xbb\xbf'
+    existBom = lambda s: True if s==BOM else False
+  
+    f = open(filebomcheck, 'rb')
+    if existBom( f.read(3) ):
+        fbody = f.read()
+        #f.close()
+        with open(filebomcheck, 'wb') as f:
+            f.write(fbody)
+
 def main():
     logging.basicConfig(format='%(levelname)s: %(message)s')
     if len(sys.argv) == 1:
@@ -838,6 +849,9 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
+    #try to slove the bom problem begin
+    bomcheck(args.file[0])
+    #try to slove the bom problem end  //I hate four space!I like TAB and brackets!
     Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
 
 
