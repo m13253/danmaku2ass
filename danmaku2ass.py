@@ -74,6 +74,8 @@ def ProbeCommentFormat(f):
             return 'Tudou'
         elif tmp == '"root":{"total':
             return 'sH5V'
+        elif tmp.strip().startswith('"result'):
+            return 'Tudou2'
     elif tmp == '<':
         tmp = f.read(1)
         if tmp == '?':
@@ -213,6 +215,26 @@ def ReadCommentsTudou(f, fontsize):
             continue
 
 
+def ReadCommentsTudou2(f, fontsize):
+    comment_element = json.load(f)
+    for i, comment in enumerate(comment_element['result']):
+        try:
+            c = str(comment['content'])
+            prop = json.loads(str(comment['propertis']) or '{}')
+            size = prop.get('size', 1)
+            assert size in (0, 1, 2)
+            size = {0: 0.64, 1: 1, 2: 1.44}[size] * fontsize
+            pos = prop.get('pos', 3)
+            assert pos in (0, 3, 4, 6)
+            yield (
+                int(comment['playat'] * 0.001), int(comment['createtime'] * 0.001), i, c,
+                {0: 0, 3: 0, 4: 2, 6: 1}[pos],
+                int(prop.get('color', 0xffffff)), size, (c.count('\n') + 1) * size, CalculateLength(c) * size)
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning(_('Invalid comment: %r') % comment)
+            continue
+
+
 def ReadCommentsMioMio(f, fontsize):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffc000, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000}
     dom = xml.dom.minidom.parseString(f.read().encode('utf-8', 'replace'))
@@ -256,7 +278,7 @@ def ReadCommentsSH5V(f, fontsize):
             continue
 
 
-CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'MioMio': ReadCommentsMioMio, 'sH5V': ReadCommentsSH5V}
+CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'Tudou2': ReadCommentsTudou2, 'MioMio': ReadCommentsMioMio, 'sH5V': ReadCommentsSH5V}
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
