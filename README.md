@@ -42,10 +42,11 @@ Players for a specific site
 
 If you prefer to watch videos on a specific site listed below with a media player, you can check these projects, which usually provide online streaming features:
 
-- Bilibili.tv: [BiliDan](https://github.com/m13253/BiliDan), (MPV Player, FFmpeg, Linux, OS X, (unstable on) Windows), officially supported by Danmaku2ASS contributer
-- Bilibili.tv: [BiliGui](https://github.com/marguerite/BiliGui), (MPV Player, Ruby, Qt4, FFmpeg, Linux)
-- Bilibili.tv: [Biligrab](https://github.com/cnbeining/Biligrab), (Aria2, Python2, FFmpeg, OS X, (unstable on) Linux)
-- Bilibili.tv: [MoonPlayer](https://github.com/coslyk/moonplayer), (MPlayer, Qt4, Linux, Windows)
+- Bilibili: [BiliDan](https://github.com/m13253/BiliDan), (MPV Player, FFmpeg, Linux, OS X, (unstable on) Windows), officially supported by Danmaku2ASS contributer
+- Bilibili: [BiliGui](https://github.com/marguerite/BiliGui), (MPV Player, Ruby, Qt4, FFmpeg, Linux)
+- Bilibili: [Biligrab](https://github.com/cnbeining/Biligrab), (Aria2, Python2, FFmpeg, OS X, (unstable on) Linux)
+- Bilibili: [MoonPlayer](https://github.com/coslyk/moonplayer), (MPlayer, Qt4, Linux, Windows)
+- Tudou Doupao, Acfun, Bilibili: [Yatto](https://github.com/Goshin/Yatto), (MPV Player, FFmpeg, Linux)
 
 Please [submit your work](https://github.com/m13253/danmaku2ass/issues) if you have made a better one!
 
