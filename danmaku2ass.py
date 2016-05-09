@@ -221,10 +221,10 @@ def ReadCommentsTudou2(f, fontsize):
         try:
             c = str(comment['content'])
             prop = json.loads(str(comment['propertis']) or '{}')
-            size = prop.get('size', 1)
+            size = int(prop.get('size', 1))
             assert size in (0, 1, 2)
             size = {0: 0.64, 1: 1, 2: 1.44}[size] * fontsize
-            pos = prop.get('pos', 3)
+            pos = int(prop.get('pos', 3))
             assert pos in (0, 3, 4, 6)
             yield (
                 int(comment['playat'] * 0.001), int(comment['createtime'] * 0.001), i, c,
