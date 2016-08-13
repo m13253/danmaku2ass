@@ -618,8 +618,13 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     )
 
 
+Filter = None
+
+
 def WriteComment(f, c, row, width, height, bottomReserved, fontsize, duration_marquee, duration_still, styleid):
     text = ASSEscape(c[3])
+    if Filter and Filter.search(text):
+        return
     styles = []
     if c[4] == 1:
         styles.append('\\an8\\pos(%(halfwidth)d, %(row)d)' % {'halfwidth': width/2, 'row': row})
@@ -777,6 +782,7 @@ def GetCommentProcessor(input_file):
 
 
 def main():
+    global Filter
     logging.basicConfig(format='%(levelname)s: %(message)s')
     if len(sys.argv) == 1:
         sys.argv.append('--help')
@@ -789,6 +795,7 @@ def main():
     parser.add_argument('-a', '--alpha', metavar=_('ALPHA'), help=_('Text opacity'), type=float, default=1.0)
     parser.add_argument('-dm', '--duration-marquee', metavar=_('SECONDS'), help=_('Duration of scrolling comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-ds', '--duration-still', metavar=_('SECONDS'), help=_('Duration of still comment display [default: %s]') % 5, type=float, default=5.0)
+    parser.add_argument('-fl', '--filter', help=_('Regular expression to filter comments'))
     parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
     parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))
@@ -799,6 +806,11 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
+    try:
+        if args.filter:
+            Filter = re.compile(args.filter)
+    except:
+        raise ValueError(_('Invalid filter: %s') % args.filter)
     Danmaku2ASS(args.file, args.format, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
 
 
