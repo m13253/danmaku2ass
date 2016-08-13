@@ -46,7 +46,7 @@ msgstr "格式"
 #: danmaku2ass.py:797
 #, python-format
 msgid "Format of input file (autodetect|%s) [default: autodetect]"
-msgstr "輸入文件格式 (autodetect|%s) [預設: autodetect]"
+msgstr "輸入檔案格式 (autodetect|%s) [預設: autodetect]"
 
 #: danmaku2ass.py:798
 msgid "OUTPUT"
