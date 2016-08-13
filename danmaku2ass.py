@@ -512,7 +512,7 @@ def ConvertFlashRotation(rotY, rotZ, X, Y, width, height):
     return (trX, trY, WrapAngle(outX), WrapAngle(outY), WrapAngle(outZ), scaleXY*100, scaleXY*100)
 
 
-def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, duration_marquee, duration_still, reduced, progress_callback):
+def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsize, alpha, duration_marquee, duration_still, filter_regex, reduced, progress_callback):
     styleid = 'Danmaku2ASS_%04x' % random.randint(0, 0xffff)
     WriteASSHead(f, width, height, fontface, fontsize, alpha, styleid)
     rows = [[None]*(height-bottomReserved+1) for i in range(4)]
@@ -520,6 +520,8 @@ def ProcessComments(comments, f, width, height, bottomReserved, fontface, fontsi
         if progress_callback and idx % 1000 == 0:
             progress_callback(idx, len(comments))
         if isinstance(i[4], int):
+            if filter_regex and filter_regex.search(i[3]):
+                continue
             row = 0
             rowmax = height-bottomReserved-i[7]
             while row <= rowmax:
@@ -618,13 +620,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     )
 
 
-Filter = None
-
-
 def WriteComment(f, c, row, width, height, bottomReserved, fontsize, duration_marquee, duration_still, styleid):
     text = ASSEscape(c[3])
-    if Filter and Filter.search(text):
-        return
     styles = []
     if c[4] == 1:
         styles.append('\\an8\\pos(%(halfwidth)d, %(row)d)' % {'halfwidth': width/2, 'row': row})
@@ -729,12 +726,11 @@ def export(func):
 
 @export
 def Danmaku2ASS(input_files, input_format, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, comment_filter=None, is_reduce_comments=False, progress_callback=None):
-    global Filter
     try:
         if comment_filter:
-            Filter = re.compile(comment_filter)
+            filter_regex = re.compile(comment_filter)
         else:
-            Filter = None
+            filter_regex = None
     except:
         raise ValueError(_('Invalid regular expression: %s') % comment_filter)
     fo = None
@@ -744,7 +740,7 @@ def Danmaku2ASS(input_files, input_format, output_file, stage_width, stage_heigh
             fo = ConvertToFile(output_file, 'w', encoding='utf-8-sig', errors='replace', newline='\r\n')
         else:
             fo = sys.stdout
-        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opacity, duration_marquee, duration_still, is_reduce_comments, progress_callback)
+        ProcessComments(comments, fo, stage_width, stage_height, reserve_blank, font_face, font_size, text_opacity, duration_marquee, duration_still, filter_regex, is_reduce_comments, progress_callback)
     finally:
         if output_file and fo != output_file:
             fo.close()
