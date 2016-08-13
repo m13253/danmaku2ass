@@ -787,7 +787,7 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--format', metavar=_('FORMAT'), help=_('Format of input [default: autodetect]'), default='autodetect')
+    parser.add_argument('-f', '--format', metavar=_('FORMAT'), help=_('Format of input file [default: autodetect]'), default='autodetect')
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
     parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face [default: %s]') % _('(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
@@ -810,7 +810,7 @@ def main():
         if args.filter:
             Filter = re.compile(args.filter)
     except:
-        raise ValueError(_('Invalid filter: %s') % args.filter)
+        raise ValueError(_('Invalid regular expression: %s') % args.filter)
     Danmaku2ASS(args.file, args.format, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
 
 
