@@ -723,9 +723,9 @@ def export(func):
 
 
 @export
-def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, is_reduce_comments=False, progress_callback=None):
+def Danmaku2ASS(input_files, input_format, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, is_reduce_comments=False, progress_callback=None):
     fo = None
-    comments = ReadComments(input_files, font_size)
+    comments = ReadComments(input_files, input_format, font_size)
     try:
         if output_file:
             fo = ConvertToFile(output_file, 'w', encoding='utf-8-sig', errors='replace', newline='\r\n')
@@ -738,7 +738,7 @@ def Danmaku2ASS(input_files, output_file, stage_width, stage_height, reserve_bla
 
 
 @export
-def ReadComments(input_files, font_size=25.0, progress_callback=None):
+def ReadComments(input_files, input_format, font_size=25.0, progress_callback=None):
     if isinstance(input_files, bytes):
         input_files = str(bytes(input_files).decode('utf-8', 'replace'))
     if isinstance(input_files, str):
@@ -752,7 +752,10 @@ def ReadComments(input_files, font_size=25.0, progress_callback=None):
         with ConvertToFile(i, 'r', encoding='utf-8', errors='replace') as f:
             s = f.read()
             str_io = io.StringIO(s)
-            CommentProcessor = GetCommentProcessor(str_io)
+            if input_format == 'autodetect':
+                CommentProcessor = GetCommentProcessor(str_io)
+            else:
+                CommentProcessor = CommentFormatMap.get(input_format)
             if not CommentProcessor:
                 raise ValueError(_('Unknown comment file format: %s') % i)
             comments.extend(CommentProcessor(FilterBadChars(str_io), font_size))
@@ -772,6 +775,7 @@ def main():
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--format', metavar=_('FORMAT'), help=_('Format of input [default: autodetect]'), default='autodetect')
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
     parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face [default: %s]') % _('(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
@@ -789,7 +793,7 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
-    Danmaku2ASS(args.file, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
+    Danmaku2ASS(args.file, args.format, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
 
 
 if __name__ == '__main__':
