@@ -54,8 +54,9 @@ Command line reference
 ----------------------
 
 ```
-usage: danmaku2ass.py [-h] [-o OUTPUT] -s WIDTHxHEIGHT [-fn FONT] [-fs SIZE]
-                      [-a ALPHA] [-dm SECONDS] [-ds SECONDS] [-p HEIGHT] [-r]
+usage: danmaku2ass.py [-h] [-f FORMAT] [-o OUTPUT] -s WIDTHxHEIGHT [-fn FONT]
+                      [-fs SIZE] [-a ALPHA] [-dm SECONDS] [-ds SECONDS]
+                      [-fl FILTER] [-p HEIGHT] [-r]
                       FILE [FILE ...]
 
 positional arguments:
@@ -63,12 +64,15 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -f FORMAT, --format FORMAT
+                        Format of input file (autodetect|Bilibili|Tudou2|MioMi
+                        o|Acfun|Niconico|Tudou) [default: autodetect]
   -o OUTPUT, --output OUTPUT
                         Output file
   -s WIDTHxHEIGHT, --size WIDTHxHEIGHT
                         Stage size in pixels
   -fn FONT, --font FONT
-                        Specify font face [default: Helvetica]
+                        Specify font face [default: sans-serif]
   -fs SIZE, --fontsize SIZE
                         Default font size [default: 25]
   -a ALPHA, --alpha ALPHA
@@ -77,6 +81,8 @@ optional arguments:
                         Duration of scrolling comment display [default: 5]
   -ds SECONDS, --duration-still SECONDS
                         Duration of still comment display [default: 5]
+  -fl FILTER, --filter FILTER
+                        Regular expression to filter comments
   -p HEIGHT, --protect HEIGHT
                         Reserve blank on the bottom of the stage
   -r, --reduce          Reduce the amount of comments if stage is full
