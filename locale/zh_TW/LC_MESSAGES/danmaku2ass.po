@@ -2,110 +2,133 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Danmaku2ASS\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-21 00:47+0800\n"
+"POT-Creation-Date: 2016-08-13 19:57+0800\n"
 "Last-Translator: Star Brilliant <m13253@hotmail.com>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: danmaku2ass.py:143 danmaku2ass.py:182 danmaku2ass.py:212
+#: danmaku2ass.py:147 danmaku2ass.py:193 danmaku2ass.py:243
 #, python-format
 msgid "Invalid comment: %s"
 msgstr "無效彈幕：%s"
 
-#: danmaku2ass.py:162 danmaku2ass.py:196 danmaku2ass.py:239 danmaku2ass.py:323
-#: danmaku2ass.py:325 danmaku2ass.py:439 danmaku2ass.py:483 danmaku2ass.py:585
+#: danmaku2ass.py:170 danmaku2ass.py:207 danmaku2ass.py:227 danmaku2ass.py:327
+#: danmaku2ass.py:329 danmaku2ass.py:443 danmaku2ass.py:543
 #, python-format
 msgid "Invalid comment: %r"
 msgstr "無效彈幕：%r"
 
-#: danmaku2ass.py:769 danmaku2ass.py:818
+#: danmaku2ass.py:731 danmaku2ass.py:800
 msgid "(FONT) sans-serif"
 msgstr "(FONT) Microsoft JhengHei"
 
-#: danmaku2ass.py:798
+#: danmaku2ass.py:739
+#, python-format
+msgid "Invalid regular expression: %s"
+msgstr "無效正規表示式：%s"
+
+#: danmaku2ass.py:772
+#, python-format
+msgid "Failed to detect comment file format: %s"
+msgstr "判斷彈幕檔案格式失敗：%s"
+
+#: danmaku2ass.py:778
 #, python-format
 msgid "Unknown comment file format: %s"
 msgstr "未知的彈幕檔案格式：%s"
 
-#: danmaku2ass.py:816
+#: danmaku2ass.py:797
+msgid "FORMAT"
+msgstr "格式"
+
+#: danmaku2ass.py:797
+#, python-format
+msgid "Format of input file (autodetect|%s) [default: autodetect]"
+msgstr "輸入檔案格式 (autodetect|%s) [預設: autodetect]"
+
+#: danmaku2ass.py:798
 msgid "OUTPUT"
 msgstr "輸出"
 
-#: danmaku2ass.py:816
+#: danmaku2ass.py:798
 msgid "Output file"
 msgstr "輸出檔案"
 
-#: danmaku2ass.py:817
-msgid "Stage size in pixels"
-msgstr "舞臺尺寸的畫素數目"
-
-#: danmaku2ass.py:817
+#: danmaku2ass.py:799
 msgid "WIDTHxHEIGHT"
 msgstr "寬x高"
 
-#: danmaku2ass.py:818
+#: danmaku2ass.py:799
+msgid "Stage size in pixels"
+msgstr "舞臺尺寸的畫素數目"
+
+#: danmaku2ass.py:800
 msgid "FONT"
 msgstr "字型"
 
-#: danmaku2ass.py:818
+#: danmaku2ass.py:800
 #, python-format
 msgid "Specify font face [default: %s]"
 msgstr "指定字型名稱 [預設: %s]"
 
-#: danmaku2ass.py:819
+#: danmaku2ass.py:801
+msgid "SIZE"
+msgstr "尺寸"
+
+#: danmaku2ass.py:801
 #, python-format
 msgid "Default font size [default: %s]"
 msgstr "預設字型大小 [預設: %s]"
 
-#: danmaku2ass.py:819
-msgid "SIZE"
-msgstr "尺寸"
-
-#: danmaku2ass.py:820
+#: danmaku2ass.py:802
 msgid "ALPHA"
 msgstr "ALPHA"
 
-#: danmaku2ass.py:820
+#: danmaku2ass.py:802
 msgid "Text opacity"
 msgstr "文字不透明度"
 
-#: danmaku2ass.py:821
+#: danmaku2ass.py:803 danmaku2ass.py:804
+msgid "SECONDS"
+msgstr "秒數"
+
+#: danmaku2ass.py:803
 #, python-format
 msgid "Duration of scrolling comment display [default: %s]"
 msgstr "滾動彈幕顯示時長 [預設: %s]"
 
-#: danmaku2ass.py:821 danmaku2ass.py:822
-msgid "SECONDS"
-msgstr "秒數"
-
-#: danmaku2ass.py:822
+#: danmaku2ass.py:804
 #, python-format
 msgid "Duration of still comment display [default: %s]"
 msgstr "靜止彈幕顯示時長 [預設: %s]"
 
-#: danmaku2ass.py:823
+#: danmaku2ass.py:805
+msgid "Regular expression to filter comments"
+msgstr "過濾彈幕的正規表示式"
+
+#: danmaku2ass.py:806
 msgid "HEIGHT"
 msgstr "高度"
 
-#: danmaku2ass.py:823
+#: danmaku2ass.py:806
 msgid "Reserve blank on the bottom of the stage"
 msgstr "在舞臺底部預留空位"
 
-#: danmaku2ass.py:824
+#: danmaku2ass.py:807
 msgid "Reduce the amount of comments if stage is full"
 msgstr "在舞臺滿時減少彈幕數量"
 
-#: danmaku2ass.py:825
-msgid "Comment file to be processed"
-msgstr "將要處理的彈幕檔案"
-
-#: danmaku2ass.py:825
+#: danmaku2ass.py:808
 msgid "FILE"
 msgstr "檔案"
 
-#: danmaku2ass.py:832
+#: danmaku2ass.py:808
+msgid "Comment file to be processed"
+msgstr "將要處理的彈幕檔案"
+
+#: danmaku2ass.py:815
 #, python-format
 msgid "Invalid stage size: %r"
 msgstr "無效舞臺尺寸：%r"
