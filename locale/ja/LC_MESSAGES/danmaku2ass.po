@@ -126,7 +126,7 @@ msgstr "ファイル"
 
 #: danmaku2ass.py:808
 msgid "Comment file to be processed"
-msgstr "ファイルが処理されるコメント"
+msgstr "コメントファイルが処理される"
 
 #: danmaku2ass.py:815
 #, python-format
