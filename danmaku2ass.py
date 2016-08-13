@@ -244,7 +244,7 @@ def ReadCommentsMioMio(f, fontsize):
             continue
 
 
-CommentFormatMap = {None: None, 'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'Tudou2': ReadCommentsTudou2, 'MioMio': ReadCommentsMioMio}
+CommentFormatMap = {'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'Tudou2': ReadCommentsTudou2, 'MioMio': ReadCommentsMioMio}
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
@@ -728,7 +728,15 @@ def export(func):
 
 
 @export
-def Danmaku2ASS(input_files, input_format, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, is_reduce_comments=False, progress_callback=None):
+def Danmaku2ASS(input_files, input_format, output_file, stage_width, stage_height, reserve_blank=0, font_face=_('(FONT) sans-serif')[7:], font_size=25.0, text_opacity=1.0, duration_marquee=5.0, duration_still=5.0, comment_filter=None, is_reduce_comments=False, progress_callback=None):
+    global Filter
+    try:
+        if comment_filter:
+            Filter = re.compile(comment_filter)
+        else:
+            Filter = None
+    except:
+        raise ValueError(_('Invalid regular expression: %s') % comment_filter)
     fo = None
     comments = ReadComments(input_files, input_format, font_size)
     try:
@@ -778,16 +786,15 @@ def ReadComments(input_files, input_format, font_size=25.0, progress_callback=No
 
 @export
 def GetCommentProcessor(input_file):
-    return CommentFormatMap[ProbeCommentFormat(input_file)]
+    return CommentFormatMap.get(ProbeCommentFormat(input_file))
 
 
 def main():
-    global Filter
     logging.basicConfig(format='%(levelname)s: %(message)s')
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--format', metavar=_('FORMAT'), help=_('Format of input file [default: autodetect]'), default='autodetect')
+    parser.add_argument('-f', '--format', metavar=_('FORMAT'), help=_('Format of input file (autodetect|%s) [default: autodetect]') % '|'.join(i for i in CommentFormatMap), default='autodetect')
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
     parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
     parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face [default: %s]') % _('(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
@@ -806,12 +813,7 @@ def main():
         height = int(height)
     except ValueError:
         raise ValueError(_('Invalid stage size: %r') % args.size)
-    try:
-        if args.filter:
-            Filter = re.compile(args.filter)
-    except:
-        raise ValueError(_('Invalid regular expression: %s') % args.filter)
-    Danmaku2ASS(args.file, args.format, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.reduce)
+    Danmaku2ASS(args.file, args.format, args.output, width, height, args.protect, args.font, args.fontsize, args.alpha, args.duration_marquee, args.duration_still, args.filter, args.reduce)
 
 
 if __name__ == '__main__':
