@@ -27,7 +27,7 @@ msgstr "(FONT) MS PGothic"
 #: danmaku2ass.py:739
 #, python-format
 msgid "Invalid regular expression: %s"
-msgstr "無効な正規表現"
+msgstr "無効な正規表現：%s"
 
 #: danmaku2ass.py:772
 #, python-format

@@ -27,12 +27,12 @@ msgstr "(FONT) SimHei"
 #: danmaku2ass.py:739
 #, python-format
 msgid "Invalid regular expression: %s"
-msgstr "无效的正则表达式：%s"
+msgstr "无效正则表达式：%s"
 
 #: danmaku2ass.py:772
 #, python-format
 msgid "Failed to detect comment file format: %s"
-msgstr "未知的弹幕文件格式：%s"
+msgstr "判断弹幕文件格式失败：%s"
 
 #: danmaku2ass.py:778
 #, python-format
