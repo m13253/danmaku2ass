@@ -20,6 +20,11 @@ pkgver() {
   git log -1 --format="%cd" --date=short | tr -d -
 }
 
+build() {
+  cd "$srcdir/danmaku2ass"
+  make
+}
+
 package() {
   cd "$srcdir/danmaku2ass"
   make install DESTDIR="$pkgdir" PREFIX=/usr
