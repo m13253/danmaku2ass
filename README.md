@@ -15,6 +15,20 @@ First, you will have to get the XML or JSON file from Niconico/Acfun/Bilibili, m
 
 Then, execute `danmaku2ass`. You can see further instructions below.
 
+Installing
+----------
+
+You may install `danmaku2ass` with the Makefile provided.
+
+```sh
+make
+make install
+```
+
+`PREFIX=` is accepted by `make install` for specifying installation prefix.
+
+A PKGBUILD is also provided.
+
 Example usage
 -------------
 
