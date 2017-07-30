@@ -25,7 +25,7 @@ install:
 		$(CP) "po/$$locale.mo" "$(DESTDIR)$(PREFIX)/share/locale/$$locale/LC_MESSAGES/danmaku2ass.mo" ; \
 	done
 	$(MKDIR) "$(DESTDIR)$(PREFIX)/bin"
-	$(LN) -s "$(PREFIX)/share/danmaku2ass/danmaku2ass.py" "$(DESTDIR)$(PREFIX)/bin/danmaku2ass"
+	$(LN) -sf "$(PREFIX)/share/danmaku2ass/danmaku2ass.py" "$(DESTDIR)$(PREFIX)/bin/danmaku2ass"
 
 clean:
 	$(RM) -R __pycache__
