@@ -19,7 +19,7 @@ all:
 
 install:
 	$(MKDIR) "$(DESTDIR)$(PREFIX)/share/danmaku2ass"
-	$(INSTALL) -Dm0755 danmaku2ass.py "$(DESTDIR)$(PREFIX)/share/danmaku2ass/danmaku2ass.py"
+	$(INSTALL) -m0755 danmaku2ass.py "$(DESTDIR)$(PREFIX)/share/danmaku2ass/danmaku2ass.py"
 	for locale in en ja zh_CN zh_TW; do \
 		$(MKDIR) "$(DESTDIR)$(PREFIX)/share/locale/$$locale/LC_MESSAGES" ; \
 		$(CP) "po/$$locale.mo" "$(DESTDIR)$(PREFIX)/share/locale/$$locale/LC_MESSAGES/danmaku2ass.mo" ; \
