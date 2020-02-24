@@ -735,7 +735,8 @@ def Danmaku2ASS(input_files, input_format, output_file, stage_width, stage_heigh
     comment_filters = [comment_filter]
     if comment_filters_json:
         with open(comment_filters_json, 'r') as f:
-            comment_filters.extend(json.load(f))
+            d = f.readlines()
+            comment_filters.extend([i.strip() for i in d])
     filters_regex = []
     for comment_filter in comment_filters:
         try:
@@ -809,7 +810,7 @@ def main():
     parser.add_argument('-dm', '--duration-marquee', metavar=_('SECONDS'), help=_('Duration of scrolling comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-ds', '--duration-still', metavar=_('SECONDS'), help=_('Duration of still comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-fl', '--filter', help=_('Regular expression to filter comments'))
-    parser.add_argument('-flf', '--filter-file', help=_('Regular expressions from json file (contain a regex list) to filter comments'))
+    parser.add_argument('-flf', '--filter-file', help=_('Regular expressions from file (one line one regex) to filter comments'))
     parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
     parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))

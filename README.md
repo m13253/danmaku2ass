@@ -98,7 +98,7 @@ optional arguments:
   -fl FILTER, --filter FILTER
                         Regular expression to filter comments
   -flf FILTER_FILE, --filter-file FILTER_FILE
-                        Regular expressions from json file (contain a regex list) to filter comments
+                        Regular expressions from file (one line one regex) to filter comments
   -p HEIGHT, --protect HEIGHT
                         Reserve blank on the bottom of the stage
   -r, --reduce          Reduce the amount of comments if stage is full
