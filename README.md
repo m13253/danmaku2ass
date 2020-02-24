@@ -97,6 +97,8 @@ optional arguments:
                         Duration of still comment display [default: 5]
   -fl FILTER, --filter FILTER
                         Regular expression to filter comments
+  -flf FILTER_FILE, --filter-file FILTER_FILE
+                        Regular expressions from file (one line one regex) to filter comments
   -p HEIGHT, --protect HEIGHT
                         Reserve blank on the bottom of the stage
   -r, --reduce          Reduce the amount of comments if stage is full
