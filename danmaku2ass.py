@@ -809,7 +809,7 @@ def main():
     parser.add_argument('-dm', '--duration-marquee', metavar=_('SECONDS'), help=_('Duration of scrolling comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-ds', '--duration-still', metavar=_('SECONDS'), help=_('Duration of still comment display [default: %s]') % 5, type=float, default=5.0)
     parser.add_argument('-fl', '--filter', help=_('Regular expression to filter comments'))
-    parser.add_argument('-flf', '--filter-file', help=_('Regular expressions from json file to filter comments'))
+    parser.add_argument('-flf', '--filter-file', help=_('Regular expressions from json file (contain a regex list) to filter comments'))
     parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
     parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))
