@@ -74,6 +74,8 @@ def ProbeCommentFormat(f):
                 return 'Niconico'
             elif tmp == 'xml version="1.0" encoding="UTF-8"?><i':
                 return 'Bilibili'
+            elif tmp == 'xml version="2.0" encoding="UTF-8"?><i':
+                return 'Bilibili2'
             elif tmp == 'xml version="1.0" encoding="utf-8"?><i':
                 return 'Bilibili'  # tucao.cc, with the same file format as Bilibili
             elif tmp == 'xml version="1.0" encoding="Utf-8"?>\n<':
@@ -194,6 +196,30 @@ def ReadCommentsBilibili(f, fontsize):
             continue
 
 
+def ReadCommentsBilibili2(f, fontsize):
+    dom = xml.dom.minidom.parse(f)
+    comment_element = dom.getElementsByTagName('d')
+    for i, comment in enumerate(comment_element):
+        try:
+            p = str(comment.getAttribute('p')).split(',')
+            assert len(p) >= 7
+            assert p[3] in ('1', '4', '5', '6', '7', '8')
+            if comment.childNodes.length > 0:
+                time = float(p[2]) / 1000.0
+                if p[3] in ('1', '4', '5', '6'):
+                    c = str(comment.childNodes[0].wholeText).replace('/n', '\n')
+                    size = int(p[4]) * fontsize / 25.0
+                    yield (time, int(p[6]), i, c, {'1': 0, '4': 2, '5': 1, '6': 3}[p[3]], int(p[5]), size, (c.count('\n') + 1) * size, CalculateLength(c) * size)
+                elif p[3] == '7':  # positioned comment
+                    c = str(comment.childNodes[0].wholeText)
+                    yield (time, int(p[6]), i, c, 'bilipos', int(p[5]), int(p[4]), 0, 0)
+                elif p[3] == '8':
+                    pass  # ignore scripted comment
+        except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
+            logging.warning(_('Invalid comment: %s') % comment.toxml())
+            continue
+
+
 def ReadCommentsTudou(f, fontsize):
     comment_element = json.load(f)
     for i, comment in enumerate(comment_element['comment_list']):
@@ -244,7 +270,7 @@ def ReadCommentsMioMio(f, fontsize):
             continue
 
 
-CommentFormatMap = {'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Tudou': ReadCommentsTudou, 'Tudou2': ReadCommentsTudou2, 'MioMio': ReadCommentsMioMio}
+CommentFormatMap = {'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Bilibili2': ReadCommentsBilibili2, 'Tudou': ReadCommentsTudou, 'Tudou2': ReadCommentsTudou2, 'MioMio': ReadCommentsMioMio}
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
