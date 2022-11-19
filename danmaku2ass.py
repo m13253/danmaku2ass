@@ -677,15 +677,14 @@ def WriteComment(f, c, row, width, height, bottomReserved, fontsize, duration_ma
 
 def ASSEscape(s):
     def ReplaceLeadingSpace(s):
-        sstrip = s.strip(' ')
-        slen = len(s)
-        if slen == len(sstrip):
+        if len(s) == 0:
             return s
-        else:
-            llen = slen - len(s.lstrip(' '))
-            rlen = slen - len(s.rstrip(' '))
-            return ''.join(('\u2007' * llen, sstrip, '\u2007' * rlen))
-    return '\\N'.join((ReplaceLeadingSpace(i) or ' ' for i in str(s).replace('\\', '\\\\').replace('{', '\\{').replace('}', '\\}').split('\n')))
+        if s[0] in (' ', '\t'):
+            s = '\u200b' + s
+        if s[-1] in (' ', '\t'):
+            s = s + '\u200b'
+        return s
+    return '\\N'.join((ReplaceLeadingSpace(i) or ' ' for i in str(s).replace('\\', '\\\u200b').replace('{', '\\{').replace('}', '\\}').split('\n')))
 
 
 def CalculateLength(s):
