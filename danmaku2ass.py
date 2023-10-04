@@ -64,6 +64,8 @@ def ProbeCommentFormat(f):
         tmp = f.read(14)
         if tmp == '"status_code":':
             return 'Tudou'
+        elif tmp.strip().startswith('"count":'):
+            return 'DanDanPlay'
         elif tmp.strip().startswith('"result'):
             return 'Tudou2'
     elif tmp == '<':
@@ -270,7 +272,37 @@ def ReadCommentsMioMio(f, fontsize):
             continue
 
 
-CommentFormatMap = {'Niconico': ReadCommentsNiconico, 'Acfun': ReadCommentsAcfun, 'Bilibili': ReadCommentsBilibili, 'Bilibili2': ReadCommentsBilibili2, 'Tudou': ReadCommentsTudou, 'Tudou2': ReadCommentsTudou2, 'MioMio': ReadCommentsMioMio}
+def ReadCommentDanDanPlay(f, fontsize):
+    comment_element = json.load(f)
+    for i, comment_item in enumerate(comment_element['comments']):
+        try:
+            timeline, pos, color, _user_id = comment_item['p'].split(',')
+            timeline = float(timeline)
+            timestamp = comment_item['cid']
+            no = i
+            comment = comment_item['m']
+            pos = int(pos)
+            pos = {1: 0, 4: 1, 5: 2}[pos]
+            color = int(color)
+            size = fontsize
+            height = (comment.count('\n') + 1) * size
+            width = CalculateLength(comment) * size
+            yield (timeline, timestamp, no, comment, pos, color, size, height, width)
+        except:
+            logging.warning(_('Invalid comment: %r') % comment_item)
+            continue
+
+
+CommentFormatMap = {
+    'Niconico': ReadCommentsNiconico,
+    'Acfun': ReadCommentsAcfun,
+    'Bilibili': ReadCommentsBilibili,
+    'Bilibili2': ReadCommentsBilibili2,
+    'Tudou': ReadCommentsTudou,
+    'Tudou2': ReadCommentsTudou2,
+    'MioMio': ReadCommentsMioMio,
+    'DanDanPlay': ReadCommentDanDanPlay
+}
 
 
 def WriteCommentBilibiliPositioned(f, c, width, height, styleid):
