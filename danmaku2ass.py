@@ -11,6 +11,11 @@
 #   https://github.com/m13253/danmaku2ass
 # Please update to the latest version before complaining.
 
+#settings
+gDefaultSizeWidth = 320
+gDefaultSizeHeight = 240
+#settings end
+
 import argparse
 import calendar
 import gettext
@@ -56,10 +61,14 @@ def EOFAsNone(function):
 def ProbeCommentFormat(f):
     tmp = f.read(1)
     if tmp == '[':
+        tmp = f.read(8)
+        if tmp == '{"ping":':
+            return 'NiconicoYtdlpJson'
         return 'Acfun'
         # It is unwise to wrap a JSON object in an array!
         # See this: http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx/
         # Do never follow what Acfun developers did!
+        # Note2, this is no longer relevant, unless someone uses a browser from 2010.
     elif tmp == '{':
         tmp = f.read(14)
         if tmp == '"status_code":':
@@ -123,6 +132,46 @@ def ProbeCommentFormat(f):
 #
 
 
+def ReadCommentsNiconicoYtdlpJson(f, fontsize):
+    NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffcc00, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000, 'niconicowhite': 0xcccc99, 'white2': 0xcccc99, 'truered': 0xcc0033, 'red2': 0xcc0033, 'passionorange': 0xff6600, 'orange2': 0xff6600, 'madyellow': 0x999900, 'yellow2': 0x999900, 'elementalgreen': 0x00cc66, 'green2': 0x00cc66, 'marineblue': 0x33ffcc, 'blue2': 0x33ffcc, 'nobleviolet': 0x6633cc, 'purple2': 0x6633cc}
+    json_list = json.load(f)
+    for json_dict in json_list:
+        if len(json_dict) != 1:
+            logging.warning(_('Rare json: %s') % str(json_dict))
+            continue
+        (key, value), = json_dict.items()
+        if key != 'chat':
+            continue
+        del key
+        comment = value['content']
+        if comment.startswith('/'):
+            logging.warning(_('Advanced comment: %s') % comment)
+        pos = 0
+        color = 0xffffff
+        size = fontsize
+        mail = ""
+        try:
+            mail = value['mail']
+        except KeyError:
+            pass
+        for mailstyle in mail.split():
+            if mailstyle == 'ue':
+                pos = 1
+            elif mailstyle == 'shita':
+                pos = 2
+            elif mailstyle == 'big':
+                size = fontsize * 1.44
+            elif mailstyle == 'small':
+                size = fontsize * 0.64
+            elif mailstyle in NiconicoColorMap:
+                color = NiconicoColorMap[mailstyle]
+        timeline = max(value['vpos'], 0) * 0.01
+        timestamp = value['date']
+        no = value['no']
+        height = (comment.count('\n') + 1) * size
+        width = CalculateLength(comment) * size
+        yield (timeline, timestamp, no, comment, pos, color, size, height, width)
+
 def ReadCommentsNiconico(f, fontsize):
     NiconicoColorMap = {'red': 0xff0000, 'pink': 0xff8080, 'orange': 0xffcc00, 'yellow': 0xffff00, 'green': 0x00ff00, 'cyan': 0x00ffff, 'blue': 0x0000ff, 'purple': 0xc000ff, 'black': 0x000000, 'niconicowhite': 0xcccc99, 'white2': 0xcccc99, 'truered': 0xcc0033, 'red2': 0xcc0033, 'passionorange': 0xff6600, 'orange2': 0xff6600, 'madyellow': 0x999900, 'yellow2': 0x999900, 'elementalgreen': 0x00cc66, 'green2': 0x00cc66, 'marineblue': 0x33ffcc, 'blue2': 0x33ffcc, 'nobleviolet': 0x6633cc, 'purple2': 0x6633cc}
     dom = xml.dom.minidom.parse(f)
@@ -146,7 +195,12 @@ def ReadCommentsNiconico(f, fontsize):
                     size = fontsize * 0.64
                 elif mailstyle in NiconicoColorMap:
                     color = NiconicoColorMap[mailstyle]
-            yield (max(int(comment.getAttribute('vpos')), 0) * 0.01, int(comment.getAttribute('date')), int(comment.getAttribute('no')), c, pos, color, size, (c.count('\n') + 1) * size, CalculateLength(c) * size)
+            timeline = max(int(comment.getAttribute('vpos')), 0) * 0.01
+            timestamp = int(comment.getAttribute('date'))
+            no = int(comment.getAttribute('no'))
+            height = (c.count('\n') + 1) * size
+            width = CalculateLength(c) * size
+            yield (timeline, timestamp, no, c, pos, color, size, height, width)
         except (AssertionError, AttributeError, IndexError, TypeError, ValueError):
             logging.warning(_('Invalid comment: %s') % comment.toxml())
             continue
@@ -295,6 +349,7 @@ def ReadCommentDanDanPlay(f, fontsize):
 
 CommentFormatMap = {
     'Niconico': ReadCommentsNiconico,
+    'NiconicoYtdlpJson': ReadCommentsNiconicoYtdlpJson,
     'Acfun': ReadCommentsAcfun,
     'Bilibili': ReadCommentsBilibili,
     'Bilibili2': ReadCommentsBilibili2,
@@ -853,8 +908,60 @@ def GetCommentProcessor(input_file):
     return CommentFormatMap.get(ProbeCommentFormat(input_file))
 
 
+def mainProcessAll():
+    import glob
+    from os.path import isfile
+    
+    width = gDefaultSizeWidth
+    height = gDefaultSizeHeight
+    
+    widthHeightChanged = False
+    if len(sys.argv) > 2:
+        try:
+            width, height = str(sys.argv[2]).split('x', 1)
+            width = int(width)
+            height = int(height)
+            widthHeightChanged = True
+        except ValueError:
+            print('Invalid argument: ' + sys.argv[2])
+    
+    if not widthHeightChanged:
+        print('Using default width x height: ' + str(width) + 'x' + str(height))
+    
+    filesProcessed = 0
+    
+    for filename in glob.glob('*.comments.json'):
+        newfilename = filename[:len(filename)-len('.comments.json')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    for filename in glob.glob('*.json'):
+        if filename.endswith('.json'):
+            continue
+        newfilename = filename[:len(filename)-len('.json')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    for filename in glob.glob('*.xml'):
+        newfilename = filename[:len(filename)-len('.xml')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    if filesProcessed == 0:
+        print("Nothing to process")
+
+
 def main():
     logging.basicConfig(format='%(levelname)s: %(message)s')
+    if len(sys.argv) > 1 and sys.argv[1] == "all":
+        mainProcessAll()
+        return
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
