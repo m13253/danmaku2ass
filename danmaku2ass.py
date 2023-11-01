@@ -11,6 +11,11 @@
 #   https://github.com/m13253/danmaku2ass
 # Please update to the latest version before complaining.
 
+#settings
+gDefaultSizeWidth = 320
+gDefaultSizeHeight = 240
+#settings end
+
 import argparse
 import calendar
 import gettext
@@ -144,7 +149,12 @@ def ReadCommentsNiconicoYtdlpJson(f, fontsize):
         pos = 0
         color = 0xffffff
         size = fontsize
-        for mailstyle in value['mail'].split():
+        mail = ""
+        try:
+            mail = value['mail']
+        except KeyError:
+            pass
+        for mailstyle in mail.split():
             if mailstyle == 'ue':
                 pos = 1
             elif mailstyle == 'shita':
@@ -898,8 +908,60 @@ def GetCommentProcessor(input_file):
     return CommentFormatMap.get(ProbeCommentFormat(input_file))
 
 
+def mainProcessAll():
+    import glob
+    from os.path import isfile
+    
+    width = gDefaultSizeWidth
+    height = gDefaultSizeHeight
+    
+    widthHeightChanged = False
+    if len(sys.argv) > 2:
+        try:
+            width, height = str(sys.argv[2]).split('x', 1)
+            width = int(width)
+            height = int(height)
+            widthHeightChanged = True
+        except ValueError:
+            print('Invalid argument: ' + sys.argv[2])
+    
+    if not widthHeightChanged:
+        print('Using default width x height: ' + str(width) + 'x' + str(height))
+    
+    filesProcessed = 0
+    
+    for filename in glob.glob('*.comments.json'):
+        newfilename = filename[:len(filename)-len('.comments.json')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    for filename in glob.glob('*.json'):
+        if filename.endswith('.json'):
+            continue
+        newfilename = filename[:len(filename)-len('.json')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    for filename in glob.glob('*.xml'):
+        newfilename = filename[:len(filename)-len('.xml')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    if filesProcessed == 0:
+        print("Nothing to process")
+
+
 def main():
     logging.basicConfig(format='%(levelname)s: %(message)s')
+    if len(sys.argv) > 1 and sys.argv[1] == "all":
+        mainProcessAll()
+        return
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
