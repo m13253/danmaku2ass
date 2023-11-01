@@ -11,6 +11,11 @@
 #   https://github.com/m13253/danmaku2ass
 # Please update to the latest version before complaining.
 
+#settings
+gDefaultSizeWidth = 320
+gDefaultSizeHeight = 240
+#settings end
+
 import argparse
 import calendar
 import gettext
@@ -144,7 +149,12 @@ def ReadCommentsNiconicoYtdlpJson(f, fontsize):
         pos = 0
         color = 0xffffff
         size = fontsize
-        for mailstyle in value['mail'].split():
+        mail = ""
+        try:
+            mail = value['mail']
+        except KeyError:
+            pass
+        for mailstyle in mail.split():
             if mailstyle == 'ue':
                 pos = 1
             elif mailstyle == 'shita':
@@ -898,14 +908,66 @@ def GetCommentProcessor(input_file):
     return CommentFormatMap.get(ProbeCommentFormat(input_file))
 
 
+def mainProcessAll():
+    import glob
+    from os.path import isfile
+    
+    width = gDefaultSizeWidth
+    height = gDefaultSizeHeight
+    
+    widthHeightChanged = False
+    if len(sys.argv) > 2:
+        try:
+            width, height = str(sys.argv[2]).split('x', 1)
+            width = int(width)
+            height = int(height)
+            widthHeightChanged = True
+        except ValueError:
+            print('Invalid argument: ' + sys.argv[2])
+    
+    if not widthHeightChanged:
+        print('Using default width x height: ' + str(width) + 'x' + str(height))
+    
+    filesProcessed = 0
+    
+    for filename in glob.glob('*.comments.json'):
+        newfilename = filename[:len(filename)-len('.comments.json')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    for filename in glob.glob('*.json'):
+        if filename.endswith('.json'):
+            continue
+        newfilename = filename[:len(filename)-len('.json')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    for filename in glob.glob('*.xml'):
+        newfilename = filename[:len(filename)-len('.xml')] + '.ass'
+        if not isfile(newfilename):
+            print("Processing: " + newfilename)
+            Danmaku2ASS(filename, 'autodetect', newfilename, gDefaultSizeWidth, gDefaultSizeHeight)
+            filesProcessed += 1
+    
+    if filesProcessed == 0:
+        print("Nothing to process")
+
+
 def main():
     logging.basicConfig(format='%(levelname)s: %(message)s')
+    if len(sys.argv) > 1 and sys.argv[1] == "all":
+        mainProcessAll()
+        return
     if len(sys.argv) == 1:
         sys.argv.append('--help')
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--format', metavar=_('FORMAT'), help=_('Format of input file (autodetect|%s) [default: autodetect]') % '|'.join(i for i in CommentFormatMap), default='autodetect')
     parser.add_argument('-o', '--output', metavar=_('OUTPUT'), help=_('Output file'))
-    parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), required=True, help=_('Stage size in pixels'))
+    parser.add_argument('-s', '--size', metavar=_('WIDTHxHEIGHT'), help=_('Stage size in pixels'))
     parser.add_argument('-fn', '--font', metavar=_('FONT'), help=_('Specify font face [default: %s]') % _('(FONT) sans-serif')[7:], default=_('(FONT) sans-serif')[7:])
     parser.add_argument('-fs', '--fontsize', metavar=_('SIZE'), help=(_('Default font size [default: %s]') % 25), type=float, default=25.0)
     parser.add_argument('-a', '--alpha', metavar=_('ALPHA'), help=_('Text opacity'), type=float, default=1.0)
@@ -915,7 +977,7 @@ def main():
     parser.add_argument('-flf', '--filter-file', help=_('Regular expressions from file (one line one regex) to filter comments'))
     parser.add_argument('-p', '--protect', metavar=_('HEIGHT'), help=_('Reserve blank on the bottom of the stage'), type=int, default=0)
     parser.add_argument('-r', '--reduce', action='store_true', help=_('Reduce the amount of comments if stage is full'))
-    parser.add_argument('file', metavar=_('FILE'), nargs='+', help=_('Comment file to be processed'))
+    parser.add_argument('file', metavar=_('FILE'), nargs='*', help=_('Comment file to be processed'))
     args = parser.parse_args()
     try:
         width, height = str(args.size).split('x', 1)
