@@ -12,7 +12,7 @@ depends=('python>=3')
 makedepends=('git')
 provides=('danmaku2ass')
 conflicts=('danmaku2ass')
-source=('danmaku2ass::git://github.com/m13253/danmaku2ass.git')
+source=('danmaku2ass::git+https://github.com/m13253/danmaku2ass.git')
 md5sums=('SKIP')
 
 pkgver() {
